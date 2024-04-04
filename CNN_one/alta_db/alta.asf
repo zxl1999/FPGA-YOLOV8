@@ -1,0 +1,71 @@
+set_instance_assignment -name ENABLE_OPEN_DRAIN -to cam_scl~output false
+set_instance_assignment -name ENABLE_OPEN_DRAIN -to cam_sda~output false
+set_instance_assignment -name ENABLE_OPEN_DRAIN -to led~output false
+set_instance_assignment -name ENABLE_OPEN_DRAIN -to cam_xclk~output false
+set_instance_assignment -name ENABLE_OPEN_DRAIN -to cam_pdown~output false
+set_instance_assignment -name ENABLE_OPEN_DRAIN -to cam_reset~output false
+set_instance_assignment -name ENABLE_OPEN_DRAIN -to e_tx[1]~output false
+set_instance_assignment -name ENABLE_OPEN_DRAIN -to e_txen~output false
+set_instance_assignment -name ENABLE_OPEN_DRAIN -to e_tx[0]~output false
+set_instance_assignment -name CLKIN_FREQ -extension -to alt_pll_inst|altpll_component|auto_generated|pll1 50
+set_location_assignment -to cam_data PIN_34
+set_location_assignment -to cam_data[0] PIN_46
+set_instance_assignment -to cam_data[0] -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_data[1] PIN_44
+set_instance_assignment -to cam_data[1] -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_data[2] PIN_43
+set_instance_assignment -to cam_data[2] -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_data[3] PIN_42
+set_instance_assignment -to cam_data[3] -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_data[4] PIN_39
+set_instance_assignment -to cam_data[4] -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_data[5] PIN_38
+set_instance_assignment -to cam_data[5] -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_data[6] PIN_34
+set_instance_assignment -to cam_data[6] -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_data[7] PIN_33
+set_instance_assignment -to cam_data[7] -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_hsync PIN_30
+set_instance_assignment -to cam_hsync -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_pclk PIN_31
+set_instance_assignment -to cam_pclk -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_pdown PIN_50
+set_instance_assignment -to cam_pdown -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_reset PIN_49
+set_instance_assignment -to cam_reset -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_scl PIN_10
+set_instance_assignment -to cam_scl -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_sda PIN_11
+set_instance_assignment -to cam_sda -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_vsync PIN_28
+set_instance_assignment -to cam_vsync -name IO_STANDARD "2.5 V"
+set_location_assignment -to cam_xclk PIN_32
+set_instance_assignment -to cam_xclk -name IO_STANDARD "2.5 V"
+set_location_assignment -to clk PIN_25
+set_instance_assignment -to clk -name IO_STANDARD "2.5 V"
+set_location_assignment -to e_rx PIN_103
+set_location_assignment -to e_rx[0] PIN_103
+set_instance_assignment -to e_rx[0] -name IO_STANDARD "2.5 V"
+set_location_assignment -to e_rx[1] PIN_104
+set_instance_assignment -to e_rx[1] -name IO_STANDARD "2.5 V"
+set_location_assignment -to e_rxclk PIN_105
+set_instance_assignment -to e_rxclk -name IO_STANDARD "2.5 V"
+set_location_assignment -to e_rxdv PIN_100
+set_instance_assignment -to e_rxdv -name IO_STANDARD "2.5 V"
+set_location_assignment -to e_rxer PIN_101
+set_instance_assignment -to e_rxer -name IO_STANDARD "2.5 V"
+set_location_assignment -to e_tx PIN_106
+set_location_assignment -to e_tx[0] PIN_106
+set_instance_assignment -to e_tx[0] -name IO_STANDARD "2.5 V"
+set_location_assignment -to e_tx[1] PIN_110
+set_instance_assignment -to e_tx[1] -name IO_STANDARD "2.5 V"
+set_location_assignment -to e_txen PIN_111
+set_instance_assignment -to e_txen -name IO_STANDARD "2.5 V"
+set_location_assignment -to led PIN_7
+set_instance_assignment -to led -name IO_STANDARD "2.5 V"
+set_location_assignment -to rst_n PIN_91
+set_instance_assignment -to rst_n -name IO_STANDARD "2.5 V"
+set_instance_assignment -to altera_reserved_tck -name VIRTUAL_PIN ON
+set_instance_assignment -to altera_reserved_tdi -name VIRTUAL_PIN ON
+set_instance_assignment -to altera_reserved_tdo -name VIRTUAL_PIN ON
+set_instance_assignment -to altera_reserved_tms -name VIRTUAL_PIN ON

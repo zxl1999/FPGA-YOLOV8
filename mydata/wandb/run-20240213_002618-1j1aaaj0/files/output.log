@@ -1,0 +1,113 @@
+
+Freezing layer 'model.22.dfl.conv.weight'
+[34m[1mtrain: [39m[22mScanning D:\jichuang\CNN\mydata\labels... 897 images, 0 backgrounds, 0 corrupt:  71%|███████   | 897/1260 [00:01
+[34m[1mtrain: [39m[22mWARNING ⚠️ D:\jichuang\CNN\mydata\images\crazing_120.jpg: 1 duplicate labels removed
+[34m[1mtrain: [39m[22mWARNING ⚠️ D:\jichuang\CNN\mydata\images\patches_198.jpg: 1 duplicate labels removed
+[34m[1mtrain: [39m[22mNew cache created: D:\jichuang\CNN\mydata\labels.cache
+[34m[1mtrain: [39m[22mScanning D:\jichuang\CNN\mydata\labels... 1260 images, 0 backgrounds, 0 corrupt: 100%|██████████| 1260/1260 [00:
+[34m[1mval: [39m[22mScanning D:\jichuang\CNN\mydata\val\labels... 270 images, 0 backgrounds, 0 corrupt: 100%|██████████| 270/270 [00:0
+Plotting labels to runs\detect\train4\labels.jpg...
+[34m[1moptimizer:[39m[22m 'optimizer=auto' found, ignoring 'lr0=0.01' and 'momentum=0.937' and determining best 'optimizer', 'lr0' and 'momentum' automatically...
+[34m[1moptimizer:[39m[22m AdamW(lr=0.001, momentum=0.9) with parameter groups 57 weight(decay=0.0), 64 weight(decay=0.0005), 63 bias(decay=0.0)
+[34m[1mTensorBoard: [39m[22mmodel graph visualization added ✅
+Image sizes 640 train, 640 val
+Using 0 dataloader workers
+Logging results to [1mruns\detect\train4
+Starting training for 100 epochs...
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+  0%|          | 0/79 [00:00<?, ?it/s]C:\Users\acer\AppData\Roaming\Python\Python38\site-packages\torch\autocast_mode.py:141: UserWarning: User provided device_type of 'cuda', but CUDA is not available. Disabling
+  warnings.warn('User provided device_type of \'cuda\', but CUDA is not available. Disabling')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      1/100         0G       3.49      4.417      4.124         61        640: 100%|██████████| 79/79 [49:28<00:00, 37.
+
+
+
+
+
+
+
+
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95):  89%|████████▉ | 8/9 [03:22<0
+
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 9/9 [03:31<0
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+  0%|          | 0/79 [00:00<?, ?it/s]C:\Users\acer\AppData\Roaming\Python\Python38\site-packages\torch\autocast_mode.py:141: UserWarning: User provided device_type of 'cuda', but CUDA is not available. Disabling
+  warnings.warn('User provided device_type of \'cuda\', but CUDA is not available. Disabling')
+
+

@@ -1,0 +1,81 @@
+--alt_u_div DEVICE_FAMILY="Cyclone IV E" LPM_PIPELINE=0 MAXIMIZE_SPEED=5 SKIP_BITS=0 WIDTH_D=2 WIDTH_N=3 WIDTH_Q=3 WIDTH_R=2 denominator numerator quotient remainder
+--VERSION_BEGIN 13.1 cbx_cycloneii 2013:10:23:18:05:48:SJ cbx_lpm_abs 2013:10:23:18:05:48:SJ cbx_lpm_add_sub 2013:10:23:18:05:48:SJ cbx_lpm_divide 2013:10:23:18:05:48:SJ cbx_mgl 2013:10:23:18:06:54:SJ cbx_stratix 2013:10:23:18:05:48:SJ cbx_stratixii 2013:10:23:18:05:48:SJ cbx_util_mgl 2013:10:23:18:05:48:SJ  VERSION_END
+
+
+-- Copyright (C) 1991-2013 Altera Corporation
+--  Your use of Altera Corporation's design tools, logic functions 
+--  and other software and tools, and its AMPP partner logic 
+--  functions, and any output files from any of the foregoing 
+--  (including device programming or simulation files), and any 
+--  associated documentation or information are expressly subject 
+--  to the terms and conditions of the Altera Program License 
+--  Subscription Agreement, Altera MegaCore Function License 
+--  Agreement, or other applicable license agreement, including, 
+--  without limitation, that your use is for the sole purpose of 
+--  programming logic devices manufactured by Altera and sold by 
+--  Altera or its authorized distributors.  Please refer to the 
+--  applicable agreement for further details.
+
+
+FUNCTION add_sub_7pc (dataa[0..0], datab[0..0])
+RETURNS ( cout, result[0..0]);
+FUNCTION add_sub_8pc (dataa[1..0], datab[1..0])
+RETURNS ( cout, result[1..0]);
+
+--synthesis_resources = lut 4 
+SUBDESIGN alt_u_div_s3f
+( 
+	denominator[1..0]	:	input;
+	numerator[2..0]	:	input;
+	quotient[2..0]	:	output;
+	remainder[1..0]	:	output;
+) 
+VARIABLE 
+	add_sub_0 : add_sub_7pc;
+	add_sub_1 : add_sub_8pc;
+	add_sub_2_result_int[3..0]	:	WIRE;
+	add_sub_2_cout	:	WIRE;
+	add_sub_2_dataa[2..0]	:	WIRE;
+	add_sub_2_datab[2..0]	:	WIRE;
+	add_sub_2_result[2..0]	:	WIRE;
+	DenominatorIn[11..0]	: WIRE;
+	DenominatorIn_tmp[11..0]	: WIRE;
+	gnd_wire	: WIRE;
+	nose[11..0]	: WIRE;
+	NumeratorIn[11..0]	: WIRE;
+	NumeratorIn_tmp[11..0]	: WIRE;
+	prestg[8..0]	: WIRE;
+	quotient_tmp[2..0]	: WIRE;
+	sel[7..0]	: WIRE;
+	selnose[11..0]	: WIRE;
+	StageIn[11..0]	: WIRE;
+	StageIn_tmp[11..0]	: WIRE;
+	StageOut[8..0]	: WIRE;
+
+BEGIN 
+	add_sub_0.dataa[0..0] = NumeratorIn[2..2];
+	add_sub_0.datab[0..0] = DenominatorIn[0..0];
+	add_sub_1.dataa[] = ( StageIn[3..3], NumeratorIn[4..4]);
+	add_sub_1.datab[1..0] = DenominatorIn[4..3];
+	add_sub_2_result_int[] = (0, add_sub_2_dataa[]) - (0, add_sub_2_datab[]);
+	add_sub_2_result[] = add_sub_2_result_int[2..0];
+	add_sub_2_cout = !add_sub_2_result_int[3];
+	add_sub_2_dataa[] = ( StageIn[7..6], NumeratorIn[6..6]);
+	add_sub_2_datab[] = DenominatorIn[8..6];
+	DenominatorIn[] = DenominatorIn_tmp[];
+	DenominatorIn_tmp[] = ( DenominatorIn[8..0], ( gnd_wire, denominator[]));
+	gnd_wire = B"0";
+	nose[] = ( B"000", add_sub_2_cout, B"000", add_sub_1.cout, B"000", add_sub_0.cout);
+	NumeratorIn[] = NumeratorIn_tmp[];
+	NumeratorIn_tmp[] = ( NumeratorIn[8..0], numerator[]);
+	prestg[] = ( add_sub_2_result[], GND, add_sub_1.result[], B"00", add_sub_0.result[]);
+	quotient[] = quotient_tmp[];
+	quotient_tmp[] = ( (! selnose[0..0]), (! selnose[4..4]), (! selnose[8..8]));
+	remainder[1..0] = StageIn[10..9];
+	sel[] = ( gnd_wire, (sel[7..7] # DenominatorIn[10..10]), gnd_wire, (sel[5..5] # DenominatorIn[7..7]), gnd_wire, (sel[3..3] # DenominatorIn[4..4]), gnd_wire, (sel[1..1] # DenominatorIn[1..1]));
+	selnose[] = ( (! nose[11..11]), ((! nose[10..10]) # sel[7..7]), ((! nose[9..9]) # sel[6..6]), (! nose[8..8]), ((! nose[7..7]) # sel[5..5]), ((! nose[6..6]) # sel[4..4]), (! nose[5..5]), ((! nose[4..4]) # sel[3..3]), ((! nose[3..3]) # sel[2..2]), (! nose[2..2]), ((! nose[1..1]) # sel[1..1]), ((! nose[0..0]) # sel[0..0]));
+	StageIn[] = StageIn_tmp[];
+	StageIn_tmp[] = ( StageOut[8..0], B"000");
+	StageOut[] = ( ((( StageIn[7..6], NumeratorIn[6..6]) & selnose[8..8]) # (prestg[8..6] & (! selnose[8..8]))), ((( StageIn[4..3], NumeratorIn[4..4]) & selnose[4..4]) # (prestg[5..3] & (! selnose[4..4]))), ((( StageIn[1..0], NumeratorIn[2..2]) & selnose[0..0]) # (prestg[2..0] & (! selnose[0..0]))));
+END;
+--VALID FILE

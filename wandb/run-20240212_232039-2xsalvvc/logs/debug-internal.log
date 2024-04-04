@@ -1,0 +1,72 @@
+2024-02-12 23:20:48,962 INFO    MainThread:13216 [internal.py:wandb_internal():87] W&B internal server running at pid: 13216, started at: 2024-02-12 23:20:48.961357
+2024-02-12 23:20:48,966 INFO    WriterThread:13216 [datastore.py:open_for_write():77] open: D:\jichuang\CNN\wandb\run-20240212_232039-2xsalvvc\run-2xsalvvc.wandb
+2024-02-12 23:20:48,967 DEBUG   HandlerThread:13216 [handler.py:handle_request():130] handle_request: check_version
+2024-02-12 23:20:48,975 DEBUG   SenderThread:13216 [sender.py:send():238] send: header
+2024-02-12 23:20:48,976 DEBUG   SenderThread:13216 [sender.py:send_request():252] send_request: check_version
+2024-02-12 23:20:49,026 DEBUG   SenderThread:13216 [sender.py:send():238] send: run
+2024-02-12 23:20:52,498 ERROR   SenderThread:13216 [retry.py:__call__():126] Retry attempt failed:
+Traceback (most recent call last):
+  File "D:\anaconda\lib\site-packages\urllib3\connectionpool.py", line 776, in urlopen
+    self._prepare_proxy(conn)
+  File "D:\anaconda\lib\site-packages\urllib3\connectionpool.py", line 1045, in _prepare_proxy
+    conn.connect()
+  File "D:\anaconda\lib\site-packages\urllib3\connection.py", line 619, in connect
+    self.sock = sock = self._connect_tls_proxy(self.host, sock)
+  File "D:\anaconda\lib\site-packages\urllib3\connection.py", line 675, in _connect_tls_proxy
+    sock_and_verified = _ssl_wrap_socket_and_match_hostname(
+  File "D:\anaconda\lib\site-packages\urllib3\connection.py", line 782, in _ssl_wrap_socket_and_match_hostname
+    ssl_sock = ssl_wrap_socket(
+  File "D:\anaconda\lib\site-packages\urllib3\util\ssl_.py", line 470, in ssl_wrap_socket
+    ssl_sock = _ssl_wrap_socket_impl(sock, context, tls_in_tls, server_hostname)
+  File "D:\anaconda\lib\site-packages\urllib3\util\ssl_.py", line 514, in _ssl_wrap_socket_impl
+    return ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+  File "D:\anaconda\lib\ssl.py", line 500, in wrap_socket
+    return self.sslsocket_class._create(
+  File "D:\anaconda\lib\ssl.py", line 1040, in _create
+    self.do_handshake()
+  File "D:\anaconda\lib\ssl.py", line 1309, in do_handshake
+    self._sslobj.do_handshake()
+OSError: [Errno 0] Error
+
+The above exception was the direct cause of the following exception:
+
+urllib3.exceptions.ProxyError: ('Unable to connect to proxy', OSError(0, 'Error'))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\anaconda\lib\site-packages\requests\adapters.py", line 486, in send
+    resp = conn.urlopen(
+  File "D:\anaconda\lib\site-packages\urllib3\connectionpool.py", line 844, in urlopen
+    retries = retries.increment(
+  File "D:\anaconda\lib\site-packages\urllib3\util\retry.py", line 515, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='api.wandb.ai', port=443): Max retries exceeded with url: /graphql (Caused by ProxyError('Unable to connect to proxy', OSError(0, 'Error')))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\anaconda\lib\site-packages\wandb\sdk\lib\retry.py", line 102, in __call__
+    result = self._call_fn(*args, **kwargs)
+  File "D:\anaconda\lib\site-packages\wandb\sdk\internal\internal_api.py", line 141, in execute
+    return self.client.execute(*args, **kwargs)
+  File "D:\anaconda\lib\site-packages\wandb\vendor\gql-0.2.0\gql\client.py", line 52, in execute
+    result = self._get_result(document, *args, **kwargs)
+  File "D:\anaconda\lib\site-packages\wandb\vendor\gql-0.2.0\gql\client.py", line 60, in _get_result
+    return self.transport.execute(document, *args, **kwargs)
+  File "D:\anaconda\lib\site-packages\wandb\vendor\gql-0.2.0\gql\transport\requests.py", line 38, in execute
+    request = requests.post(self.url, **post_args)
+  File "D:\anaconda\lib\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "D:\anaconda\lib\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "D:\anaconda\lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "D:\anaconda\lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "D:\anaconda\lib\site-packages\requests\adapters.py", line 513, in send
+    raise ProxyError(e, request=request)
+requests.exceptions.ProxyError: HTTPSConnectionPool(host='api.wandb.ai', port=443): Max retries exceeded with url: /graphql (Caused by ProxyError('Unable to connect to proxy', OSError(0, 'Error')))
+2024-02-12 23:21:15,305 DEBUG   HandlerThread:13216 [handler.py:handle_request():130] handle_request: shutdown
+2024-02-12 23:21:15,305 INFO    HandlerThread:13216 [handler.py:finish():731] shutting down handler
+2024-02-12 23:21:16,267 INFO    WriterThread:13216 [datastore.py:close():281] close: D:\jichuang\CNN\wandb\run-20240212_232039-2xsalvvc\run-2xsalvvc.wandb

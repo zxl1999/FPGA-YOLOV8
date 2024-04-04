@@ -1,0 +1,67 @@
+=== User constraints ===
+Fmax report
+  User constraint:  10.000MHz, Fmax:  57.524MHz, Clock: Internal_generated_clock_altera_internal_jtag|tckutap
+  User constraint:  25.000MHz, Fmax: 106.769MHz, Clock: alt_pll_inst|altpll_component|auto_generated|pll1|clk[0]
+  User constraint:  50.000MHz, Fmax: 190.731MHz, Clock: clk_50m
+  User constraint:  25.000MHz, Fmax: 315.856MHz, Clock: clk_net
+  User constraint:  25.000MHz, Fmax: 130.634MHz, Clock: cmos_pclk
+
+Clock transfer report:
+  Worst setup:  41.308, with clock Internal_generated_clock_altera_internal_jtag|tckutap
+  Worst setup:  30.634, with clock alt_pll_inst|altpll_component|auto_generated|pll1|clk[0]
+  Worst setup:  14.757, with clock clk_50m
+  Worst setup:  18.417, with clock clk_net
+  Worst setup:  32.345, with clock cmos_pclk
+
+
+=== Auto constraints ===
+Fmax report
+  User constraint:  12.500MHz, Fmax:  59.659MHz, Clock: Internal_generated_clock_clk_25m|Q
+
+Clock transfer report:
+  Worst setup:  63.238, with clock Internal_generated_clock_clk_25m|Q
+  Worst setup:  30.676, from clock Internal_generated_clock_clk_25m|Q to clk_net
+  Worst setup:  30.010, from clock Internal_generated_clock_clk_25m|Q to cmos_pclk
+
+
+Coverage report
+  User constraints covered 4415 connections out of 6925 total, coverage: 63.8%
+  Auto constraints covered 6472 connections out of 6925 total, coverage: 93.5%
+
+
+Setup from auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|modified_post_count[1] to auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|is_buffer_wrapped_once_sig, clock clk_50m, constraint 20.000, skew -0.116, data 4.748
+  Slack:  14.757
+    Arrival Time:    8.556
+        0.000    0.000   R                         Launch Clock Edge
+      Launch Clock Path:
+        0.000    0.000   RR                             top_fpga|clk =>                          clk~input|padio 
+        0.658    0.658   RR                          clk~input|padio =>                        clk~input|combout 
+        1.145    0.487   RR                        clk~input|combout =>                   clk~inputclkctrl|inclk 
+        1.145    0.000   RR                   clk~inputclkctrl|inclk =>                  clk~inputclkctrl|outclk 
+        3.494    2.349   RR                  clk~inputclkctrl|outclk =>              clken_ctrl_X24_Y19_N1|ClkIn 
+        3.638    0.144   RR              clken_ctrl_X24_Y19_N1|ClkIn =>             clken_ctrl_X24_Y19_N1|ClkOut 
+        3.763    0.125   RR             clken_ctrl_X24_Y19_N1|ClkOut => auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|modified_post_count[1]|Clk 
+      Data Path:
+        3.963    0.200   RR auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|modified_post_count[1]|Clk => auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|modified_post_count[1]|Q D
+        4.946    0.983   RR auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|modified_post_count[1]|Q => auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|Equal1~0|C 
+        5.179    0.233   RR auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|Equal1~0|C => auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|Equal1~0|LutOut 
+        6.076    0.897   RR auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|Equal1~0|LutOut => auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|Equal1~4|D 
+        6.195    0.119   RR auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|Equal1~4|D => auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|Equal1~4|LutOut 
+        7.232    1.037   RR auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|Equal1~4|LutOut => auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|buffer_manager:done|D E
+        7.351    0.119   RR auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|buffer_manager:done|D => auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|buffer_manager:done|LutOut 
+        7.725    0.374   RR auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|buffer_manager:done|LutOut => auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|is_buffer_wrapped_once_sig~0|C 
+        8.020    0.295   RF auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|is_buffer_wrapped_once_sig~0|C => auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|is_buffer_wrapped_once_sig~0|LutOut 
+        8.556    0.536   FF auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|is_buffer_wrapped_once_sig~0|LutOut => auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|is_buffer_wrapped_once_sig|D E
+    Required Time:  23.313
+       20.000   20.000   R                          Latch Clock Edge
+      Latch Clock Path:
+       20.000    0.000   RR                             top_fpga|clk =>                          clk~input|padio 
+       20.658    0.658   RR                          clk~input|padio =>                        clk~input|combout 
+       21.134    0.476   RR                        clk~input|combout =>                   clk~inputclkctrl|inclk 
+       21.134    0.000   RR                   clk~inputclkctrl|inclk =>                  clk~inputclkctrl|outclk 
+       23.380    2.246   RR                  clk~inputclkctrl|outclk =>              clken_ctrl_X21_Y18_N0|ClkIn 
+       23.522    0.142   RR              clken_ctrl_X21_Y18_N0|ClkIn =>             clken_ctrl_X21_Y18_N0|ClkOut 
+       23.647    0.125   RR             clken_ctrl_X21_Y18_N0|ClkOut => auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|sld_buffer_manager_inst|is_buffer_wrapped_once_sig|Clk 
+       23.302   -0.345   R                                     Setup
+       23.313    0.011                               Clock Variation
+

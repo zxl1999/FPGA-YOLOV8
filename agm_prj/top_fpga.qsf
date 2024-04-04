@@ -1,0 +1,5 @@
+set_global_assignment -name TOP_LEVEL_ENTITY top_fpga
+set_global_assignment -name FAMILY "Cyclone IV E"
+set_global_assignment -name DEVICE "EP4CE10E22C8"
+
+set_global_assignment -name LAST_QUARTUS_VERSION 13.1

@@ -1,0 +1,54 @@
+=== User constraints ===
+
+Clock transfer report:
+  Worst  hold:   0.550, with clock alt_pll_inst|altpll_component|auto_generated|pll1|clk[0]
+  Worst  hold:   0.550, with clock clk_50m
+  Worst  hold:   0.550, with clock clk_net
+  Worst  hold:   0.389, with clock cmos_pclk
+
+=== Auto constraints ===
+
+Clock transfer report:
+  Worst  hold:   0.292, with clock Internal_generated_clock_clk_25m|Q
+  Worst  hold:   0.550, from clock Internal_generated_clock_clk_25m|Q to clk_net
+  Worst  hold:   4.666, from clock Internal_generated_clock_clk_25m|Q to cmos_pclk
+
+Coverage report
+  User constraints covered 2056 connections out of 4381 total, coverage: 46.9%
+  Auto constraints covered 3950 connections out of 4381 total, coverage: 90.2%
+
+
+Hold from cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|rdptr_g1p|counter5a8 to cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|fifo_ram|ram_block11a2, clock Internal_generated_clock_clk_25m|Q, constraint 0.000, skew -0.003, data 0.723
+  Slack:   0.292
+    Arrival Time:    8.214
+        0.000    0.000   R                         Launch Clock Edge
+      Launch Clock Path:
+        0.000    0.000   FF                         top_fpga|e_rxclk =>                      e_rxclk~input|padio 
+        0.789    0.789   FF                      e_rxclk~input|padio =>                    e_rxclk~input|combout 
+        3.111    2.322   FF                    e_rxclk~input|combout =>              clken_ctrl_X33_Y15_N0|ClkIn 
+        3.243    0.132   FR              clken_ctrl_X33_Y15_N0|ClkIn =>             clken_ctrl_X33_Y15_N0|ClkOut 
+        3.368    0.125   RR             clken_ctrl_X33_Y15_N0|ClkOut =>                              clk_25m|Clk 
+        3.568    0.200   RR                              clk_25m|Clk =>                                clk_25m|Q D
+        5.005    1.437   RR                                clk_25m|Q =>                    clk_25m~clkctrl|inclk D
+        5.005    0.000   RR                    clk_25m~clkctrl|inclk =>                   clk_25m~clkctrl|outclk 
+        7.251    2.246   RR                   clk_25m~clkctrl|outclk =>              clken_ctrl_X16_Y11_N0|ClkIn 
+        7.393    0.142   RR              clken_ctrl_X16_Y11_N0|ClkIn =>             clken_ctrl_X16_Y11_N0|ClkOut 
+        7.518    0.125   RR             clken_ctrl_X16_Y11_N0|ClkOut => cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|rdptr_g1p|counter5a8|Clk 
+      Data Path:
+        7.739    0.221   RF cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|rdptr_g1p|counter5a8|Clk => cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|rdptr_g1p|counter5a8|Q D
+        8.214    0.475   FF cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|rdptr_g1p|counter5a8|Q => cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|fifo_ram|ram_block11a2|AddressB[11] E
+    Required Time:   7.922
+        0.000    0.000   R                          Latch Clock Edge
+      Latch Clock Path:
+        0.000    0.000   FF                         top_fpga|e_rxclk =>                      e_rxclk~input|padio 
+        0.789    0.789   FF                      e_rxclk~input|padio =>                    e_rxclk~input|combout 
+        3.201    2.412   FF                    e_rxclk~input|combout =>              clken_ctrl_X33_Y15_N0|ClkIn 
+        3.335    0.134   FR              clken_ctrl_X33_Y15_N0|ClkIn =>             clken_ctrl_X33_Y15_N0|ClkOut 
+        3.460    0.125   RR             clken_ctrl_X33_Y15_N0|ClkOut =>                              clk_25m|Clk 
+        3.660    0.200   RR                              clk_25m|Clk =>                                clk_25m|Q D
+        5.166    1.506   RR                                clk_25m|Q =>                    clk_25m~clkctrl|inclk D
+        5.166    0.000   RR                    clk_25m~clkctrl|inclk =>                   clk_25m~clkctrl|outclk 
+        7.515    2.349   RR                   clk_25m~clkctrl|outclk => cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|fifo_ram|ram_block11a2|Clk1 
+        8.083    0.568   R                                      Hold
+        7.922   -0.161                               Clock Variation
+

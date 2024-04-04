@@ -1,0 +1,20 @@
+Info: Ignored dedicate pin altera_reserved_tdo.
+Info: Ignored dedicate pin altera_reserved_tms.
+Info: Ignored dedicate pin altera_reserved_tdi.
+Info: Ignored dedicate pin altera_reserved_tck.
+Info: Found tie LOW cell auto_hub|~GND.
+Info: Found GCLK net reset_init[5]~clkctrl_outclk (2).
+Info: Found GCLK net camera_if_inst|Equal4~0clkctrl_outclk (17).
+Info: Found GCLK net auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|reset_all~clkctrl_outclk (15).
+Info: Found GCLK net alt_pll_inst|altpll_component|auto_generated|locked~clkctrl_outclk (23).
+Info: Found GCLK net alt_pll_inst|altpll_component|auto_generated|wire_pll1_clk[0]~clkctrl_outclk (11).
+Info: Found GCLK net clk~inputclkctrl_outclk (31).
+Info: Found GCLK net clk_25m~clkctrl_outclk (40).
+Info: Found GCLK net altera_internal_jtag~TCKUTAPclkctrl_outclk (49).
+Info: Top level output port cam_sda is identified as an inout.
+Info: Auto constraint PLL: create_generated_clock -name alt_pll_inst|altpll_component|auto_generated|pll1|clk[0] -divide_by 2 -add -source clk -master_clock clk_50m alt_pll_inst|altpll_component|auto_generated|pll1|clkout0.
+Warn: Auto constraint INTERNAL: create_clock -name Internal_generated_clock_altera_internal_jtag|tckutap -period 100.000 altera_internal_jtag|tckutap.
+Warn: Auto constraint INTERNAL: create_generated_clock -name Internal_generated_clock_clk_25m|Q -divide_by 2 -add -source e_rxclk -master_clock clk_net clk_25m|Q.
+Warn: User constraints coverage is too low at 63.8%.
+
+Total 0 fatals, 0 errors, 3 warnings, 15 infos.

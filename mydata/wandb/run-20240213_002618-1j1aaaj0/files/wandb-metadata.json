@@ -1,0 +1,23 @@
+{
+    "os": "Windows-10-10.0.19041-SP0",
+    "python": "3.8.3",
+    "heartbeatAt": "2024-02-12T16:26:41.462086",
+    "startedAt": "2024-02-12T16:26:18.846245",
+    "docker": null,
+    "cpu_count": 4,
+    "cuda": null,
+    "args": [
+        "detect",
+        "train",
+        "data=mydata.yaml",
+        "model=yolov8.yaml",
+        "epochs=100",
+        "imgsz=640",
+        "resume=True"
+    ],
+    "state": "running",
+    "program": "D:\\anaconda\\Scripts\\yolo.exe\\__main__.py",
+    "host": "LAPTOP-L25Q2P65",
+    "username": "acer",
+    "executable": "D:\\anaconda\\python.exe"
+}

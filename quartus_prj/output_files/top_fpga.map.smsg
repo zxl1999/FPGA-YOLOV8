@@ -1,0 +1,6 @@
+Info (10281): Verilog HDL Declaration information at ip_send.v(15): object "send_data" differs only in case from object "SEND_DATA" in the same scope
+Info (10281): Verilog HDL Declaration information at ip_send.v(31): object "PACKET_HEAD" differs only in case from object "packet_head" in the same scope
+Info (10281): Verilog HDL Declaration information at ip_send.v(32): object "ETH_HEAD" differs only in case from object "eth_head" in the same scope
+Info (10281): Verilog HDL Declaration information at ip_send.v(33): object "IP_UDP_HEAD" differs only in case from object "ip_udp_head" in the same scope
+Info (10281): Verilog HDL Declaration information at ip_send.v(30): object "CHECK_SUM" differs only in case from object "check_sum" in the same scope
+Warning (10268): Verilog HDL information at I2C_OV7670_Config.v(29): always construct contains both blocking and non-blocking assignments

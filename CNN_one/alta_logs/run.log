@@ -1,0 +1,787 @@
+> alta::tcl_whisper "Cmd : [alta::prog_path] [alta::prog_version]([alta::prog_subversion])\n"
+Cmd : D:/Qyartus/Supra-2023.09.b0-aabe64d9-win64-all/bin/af.exe 2023.09.b0(aabe64d9)
+> alta::tcl_whisper "Args : [string map {\{ \" \} \"} $tcl_cmd_args]\n"
+Args : -X "set QUARTUS_SDC true" -X "set FITTING timing_more" -X "set FITTER hybrid" -X "set EFFORT highest" -X "set HOLDX default" -X "set SKEW   basic" -X "set MODE QUARTUS" -X "set FLOW ALL" -F ./af_run.tcl
+> 
+> set_seed_rand $SEED
+> set ar_timing_derate ${TIMING_DERATE}
+> 
+> date_time
+Wed Feb 07 22:08:20 2024
+> if { [file exists [file join . ${DESIGN}.pre.asf]] } {
+  alta::tcl_highlight "Using pre-ASF file ${DESIGN}.pre.asf.\n"
+  source [file join . ${DESIGN}.pre.asf]
+}
+Using pre-ASF file top_fpga.pre.asf.
+> 
+> set LOAD_DB    false
+> set LOAD_PLACE false
+> set LOAD_ROUTE false
+> if { $FLOW == "LOAD" || $FLOW == "CHECK" || $FLOW == "PROBE" } {
+  set LOAD_DB    true
+  set LOAD_PLACE true
+  set LOAD_ROUTE true
+} elseif { $FLOW == "R" || $FLOW == "ROUTE" } {
+  set LOAD_DB    true
+  set LOAD_PLACE true
+}
+> 
+> set ORIGINAL_QSF "D:/jichuang/CNN/quartus_prj/./top_fpga.qsf"
+> set ORIGINAL_PIN "D:/jichuang/CNN/quartus_prj/output_files/top_fpga.pin"
+> 
+> #################################################################################
+> 
+> while (1) {
+if { [info exists CORNER] } { set_mode -corner $CORNER; }
+
+eval "load_architect ${no_route} -type ${DEVICE} 1 1 1000 1000"
+foreach ip_file $IP_FILES { read_ip $ip_file; }
+
+
+if { $FLOW == "GEN" } {
+  if { ! [info exists CONFIG_BITS] } {
+    set CONFIG_BITS [file join ${RESULT_DIR} ${DESIGN}.bin]
+  }
+  if { [llength $CONFIG_BITS] > 1 } {
+    if { ! [info exists BOOT_BINARY] } {
+      set BOOT_BINARY [file join ${RESULT_DIR} ${DESIGN}_boot.bin]
+    }
+    if { ! [info exists CONFIG_ADDRESSES] } {
+      set CONFIG_ADDRESSES ""
+    }
+    generate_binary -master $BOOT_BINARY -inputs $CONFIG_BITS -address $CONFIG_ADDRESSES
+  } else {
+    set CONFIG_ROOT   [file rootname [lindex $CONFIG_BITS 0]]
+    set SLAVE_RBF     "${CONFIG_ROOT}_slave.rbf"
+    set MASTER_BINARY "${CONFIG_ROOT}_master.bin"
+    if { [file exists [lindex $CONFIG_BITS 0]] } {
+      generate_binary -slave  $SLAVE_RBF     -inputs [lindex $CONFIG_BITS 0] -reverse
+      generate_binary -master $MASTER_BINARY -inputs [lindex $CONFIG_BITS 0]
+    }
+    if { ! [info exists BOOT_BINARY] } {
+      set BOOT_BINARY $MASTER_BINARY
+    }
+  }
+  set PRG_FILE [file rootname $BOOT_BINARY].prg
+  set AS_FILE  [file rootname $BOOT_BINARY]_as.prg
+  generate_programming_file $BOOT_BINARY -erase $ERASE \
+                            -program $PROGRAM -verify $VERIFY -offset $OFFSET \
+                            -prg $PRG_FILE -as $AS_FILE
+  break
+}
+
+if { $LOAD_DB } {
+  load_db -top ${TOP_MODULE}
+  set sdc [file join . ${DESIGN}.adc]
+  if { ! [file exists $sdc] } { set sdc [file join . ${DESIGN}.sdc]; }
+  if { [file exists $sdc] } { read_sdc $sdc; }
+
+} elseif { $MODE == "QUARTUS" } {
+  set verilog ${DESIGN}.vo
+  set is_migrated false
+  if { ! [file exists $verilog] } {
+    set verilog [file join D:/jichuang/CNN/quartus_prj simulation modelsim ${DESIGN}.vo]
+    set is_migrated true
+  }
+  if { ! [file exists $verilog] } {
+    error "Can not find design verilog file $verilog"
+  }
+  alta::tcl_highlight "Using design verilog file $verilog.\n"
+  set ret [read_design -top ${TOP_MODULE} -ve $VE_FILE -qsf $ORIGINAL_QSF $verilog -hierachy 1]
+  if { !$ret } { exit -1; }
+
+  set sdc [file join . ${DESIGN}.adc]
+  if { ! [file exists $sdc] } { set sdc [file join . ${DESIGN}.sdc]; }
+  if { ! [file exists $sdc] } {
+    alta::tcl_warn "Can not find design SDC file $sdc"
+  } else {
+    alta::tcl_highlight "Using design SDC file $sdc.\n"
+    read_sdc $sdc
+  }
+
+} elseif { $MODE == "SYNPLICITY" || $MODE == "NATIVE" } {
+  set db_gclk_assignment_level 2
+  set verilog ${DESIGN}.vqm
+  set is_migrated false
+  if { ! [file exists $verilog] } {
+    error "Can not find design verilog file $verilog"
+  }
+
+  set sdc [file join . ${DESIGN}.adc]
+  if { ! [file exists $sdc] } { set sdc [file join . ${DESIGN}.sdc]; }
+  alta::tcl_highlight "Using design verilog file $verilog.\n"
+  if { ! [file exists $sdc] } {
+    alta::tcl_warn "Can not find design SDC file $sdc"
+    set ret [read_design_and_pack -sdc $sdc  -top ${TOP_MODULE} $verilog]
+  } else {
+    alta::tcl_highlight "Using design SDC file $sdc.\n"
+    set ret [read_design_and_pack -top ${TOP_MODULE} $verilog]
+  }
+  if { !$ret } { exit -1; }
+
+} else {
+  error "Unsupported mode $MODE"
+}
+
+if { $FLOW == "PACK" } { break }
+
+if { [info exists FITTING] } {
+  if { $FITTING == "Auto" } { set FITTING auto; }
+  set_mode -fitting $FITTING
+}
+if { [info exists FITTER] } {
+  if { $FITTER == "Auto" } {
+    if { $MODE == "QUARTUS" } { set FITTER hybrid; } else { set FITTER full; }
+  }
+  if { $MODE == "SYNPLICITY" || $MODE == "NATIVE" } { set FITTER full; }
+  set_mode -fitter $FITTER
+}
+if { [info exists EFFORT] } { set_mode -effort $EFFORT; }
+if { [info exists SKEW  ] } { set_mode -skew   $SKEW  ; }
+if { [info exists SKOPE ] } { set_mode -skope  $SKOPE ; }
+if { [info exists HOLDX ] } { set_mode -holdx  $HOLDX; }
+if { [info exists TUNING] } { set_mode -tuning $TUNING; }
+if { [info exists TARGET] } { set_mode -target $TARGET; }
+if { [info exists PRESET] } { set_mode -preset $PRESET; }
+if { [info exists ADJUST] } { set pl_criticality_wadjust $ADJUST; }
+
+set alta_aqf [file join $::alta_work alta.aqf]
+if { $LOAD_DB } {
+  # Empty
+} elseif { true } {
+  if { $ORIGINAL_PIN != "" } {
+    if { [file exists $VE_FILE] } {
+      set ORIGINAL_PIN ""
+    } elseif { $ORIGINAL_PIN == "-" } {
+      set ORIGINAL_PIN ""
+    } elseif { ! [file exists $ORIGINAL_PIN] } {
+      if { $is_migrated } {
+        error "Can not find design PIN file $ORIGINAL_PIN, please compile design first"
+      }
+      set ORIGINAL_PIN ""
+    }
+  }
+  if { $ORIGINAL_QSF != "" } {
+    if { $ORIGINAL_QSF == "-" } {
+      set ORIGINAL_QSF ""
+    } elseif { ! [file exists $ORIGINAL_QSF] } {
+      if { $is_migrated } {
+        error "Can not find design exported QSF file $ORIGINAL_QSF, please export assigments first"
+      }
+    }
+  }
+  alta::convert_quartus_settings_cmd $ORIGINAL_QSF $ORIGINAL_PIN $alta_aqf
+}
+if { [file exists "$alta_aqf"] } {
+  alta::tcl_highlight "Using AQF file $alta_aqf.\n"
+  source "$alta_aqf"
+}
+if { [file exists [file join . ${DESIGN}.asf]] } {
+  alta::tcl_highlight "Using ASF file ${DESIGN}.asf.\n"
+  source [file join . ${DESIGN}.asf]
+}
+
+if { $FLOW == "PROBE" } {
+  set ret [place_pseudo -user_io -place_io -place_pll -place_gclk]
+  if { !$ret } { exit -1 }
+
+  set force ""
+  if { [info exists PROBE_FORCE] && $PROBE_FORCE } { set force "-force" }
+  eval "probe_design -froms {${PROBE_FROMS}} -tos {${PROBE_TOS}} ${force}"
+
+} elseif { $FLOW == "CHECK" } {
+  set ret [place_pseudo -user_io -place_io -place_pll -place_gclk]
+  if { !$ret } { exit -1 }
+
+  if { [file exists [file join . ${DESIGN}.chk]] } {
+    alta::tcl_highlight "Using CHK file ${DESIGN}.chk.\n"
+    source [file join . ${DESIGN}.chk]
+    place_design -dry
+    check_design -rule led_guide
+  } else {
+    error "Can not find design CHECK file ${DESIGN}.chk"
+  }
+
+} else {
+  set ret [place_pseudo -user_io -place_io -place_pll -place_gclk -warn_io]
+  if { !$ret } { exit -1 }
+
+  set org_place ""
+  set load_place ""
+  set load_route ""
+  set quiet ""
+  if {  $ORG_PLACE } { set  org_place "-org_place" ; }
+  if { $LOAD_PLACE } { set load_place "-load_place"; }
+  if { $LOAD_ROUTE } { set load_route "-load_route"; }
+  eval "place_and_route_design $org_place $load_place $load_route \
+                               -retry $RETRY $seed_rand $quiet"
+}
+
+date_time
+if { $FLOW != "CHECK" } {
+if { $FLOW != "PROBE" } {
+report_timing -verbose 2 -setup -file $::alta_work/setup.rpt.gz
+report_timing -verbose 1 -setup -file $::alta_work/setup_summary.rpt
+report_timing -verbose 2 -hold -file $::alta_work/hold.rpt.gz
+report_timing -verbose 1 -hold -file $::alta_work/hold_summary.rpt
+
+set ta_report_auto_constraints 0
+report_timing -fmax -file $::alta_work/fmax.rpt
+report_timing -xfer -file $::alta_work/xfer.rpt
+set ta_report_auto_constraints $ta_report_auto
+
+set ta_dump_uncovered 1
+report_timing -verbose 1 -coverage >! $::alta_work/coverage.rpt.gz
+set ta_dump_uncovered -1
+
+
+if { ! [info exists rt_report_timing_fast] } {
+  set rt_report_timing_fast false
+}
+if { $rt_report_timing_fast } {
+  set_timing_corner fast
+  route_delay -quiet
+  report_timing -verbose 2 -setup -file $::alta_work/setup_fast.rpt.gz
+  report_timing -verbose 1 -setup -file $::alta_work/setup_fast_summary.rpt
+  report_timing -verbose 2 -hold -file $::alta_work/hold_fast.rpt.gz
+  report_timing -verbose 1 -hold -file $::alta_work/hold_fast_summary.rpt
+  set ta_report_auto_constraints 0
+  report_timing -fmax -file $::alta_work/fmax_fast.rpt
+  report_timing -xfer -file $::alta_work/xfer_fast.rpt
+  set ta_report_auto_constraints $ta_report_auto
+}
+
+write_routed_design "${RESULT_DIR}/${RESULT}_routed.v"
+}
+
+bitgen normal -prg "${RESULT_DIR}/${RESULT}.prg" -bin "${RESULT_DIR}/${RESULT}.bin"
+if { false } {
+alta::bin_to_asc "${RESULT_DIR}/${RESULT}.bin" "${RESULT_DIR}/${RESULT}.inc"
+} else {
+bitgen sram -prg "${RESULT_DIR}/${RESULT}_sram.prg"
+bitgen download -bin "${RESULT_DIR}/${RESULT}.bin" -svf "${RESULT_DIR}/${RESULT}_download.svf"
+generate_binary -slave "${RESULT_DIR}/${RESULT}_slave.rbf" \
+                -inputs "${RESULT_DIR}/${RESULT}.bin" -reverse
+generate_binary -master "${RESULT_DIR}/${RESULT}_master.bin" \
+                -inputs "${RESULT_DIR}/${RESULT}.bin"
+generate_programming_file "${RESULT_DIR}/${RESULT}_master.bin" -prg "${RESULT_DIR}/${RESULT}_master.prg" \
+  -as "${RESULT_DIR}/${RESULT}_master_as.prg" -hybrid "${RESULT_DIR}/${RESULT}_hybrid.prg"
+}
+}
+break
+}
+Total IO  : 498
+Total Pin : 251/33
+Top array is built.
+Loading architect libraries...
+## CPU time: 0:0:0, REAL time: 0:0:0
+## Memory Usage: 55MB (55MB)
+Loading route table...
+## CPU time: 0:1:15, REAL time: 0:1:19
+## Memory Usage: 832MB (832MB)
+Using design verilog file D:/jichuang/CNN/quartus_prj/simulation/modelsim/top_fpga.vo.
+Preparing design...
+## CPU time: 0:0:4, REAL time: 0:0:5
+## Memory Usage: 852MB (852MB)
+Pseudo pack design...
+Info: Ignored dedicate pin altera_reserved_tdo.
+Info: Ignored dedicate pin altera_reserved_tms.
+Info: Ignored dedicate pin altera_reserved_tdi.
+Info: Ignored dedicate pin altera_reserved_tck.
+VCO frequency: 925.000 Mhz
+  clkout0: Enabled , 25.000 Mhz
+  clkout1: Disabled, 1.807 Mhz
+  clkout2: Disabled, 1.807 Mhz
+  clkout3: Disabled, 1.807 Mhz
+  clkout4: Disabled, 1.807 Mhz
+Packing Statistics
+ Total      Logics : 1683/11120 ( 15%)
+ Total        LUTs : 1609/11120 ( 14%)
+ Total   Registers :  901/11120 (  8%)
+ Total  Block Rams :    5/   56 (  8%)
+ Total Multipliers :    0/   56 (  0%)
+ Total        PLLs :    1/    4 ( 25%)
+ Total        Pins :   31/  251 ( 12%)
+ Global    Signals :    8/   10 ( 80%)
+                   alt_pll_inst|altpll_component|auto_generated|locked~clkctrl_outclk (from:          alt_pll_inst|altpll_component|auto_generated|locked~combout)
+         alt_pll_inst|altpll_component|auto_generated|wire_pll1_clk[0]~clkctrl_outclk (from:         alt_pll_inst|altpll_component|auto_generated|pll1_CLK_bus[0])
+                                           altera_internal_jtag~TCKUTAPclkctrl_outclk (from:                                         altera_internal_jtag~TCKUTAP)
+      auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|reset_all~clkctrl_outclk (from:   auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|reset_all~q)
+                                                camera_if_inst|Equal4~0clkctrl_outclk (from:                                      camera_if_inst|Equal4~0_combout)
+                                                               clk_25m~clkctrl_outclk (from:                                                            clk_25m~q)
+                                                              clk~inputclkctrl_outclk (from:                                                          clk~input_o)
+                                                         reset_init[5]~clkctrl_outclk (from:                                                        reset_init[5])
+ Total Lonely   Datain   : 0
+ Total Lonely   Register : 74
+ Total LUT-FF   Pairs    : 782
+ Total Register Packings : 45
+ Registers with synchronous    reset : 101
+ Registers with asynchronous   reset : 427
+ Registers with sync and async reset : 48
+## CPU time: 0:0:1, REAL time: 0:0:2
+## Memory Usage: 853MB (853MB)
+Filter verilog...
+## CPU time: 0:0:0, REAL time: 0:0:1
+## Memory Usage: 853MB (853MB)
+Read DB design...
+## CPU time: 0:0:1, REAL time: 0:0:1
+## Memory Usage: 857MB (857MB)
+Process design...
+> set_instance_assignment -name ENABLE_OPEN_DRAIN -to cam_scl~output false
+> set_instance_assignment -name ENABLE_OPEN_DRAIN -to cam_sda~output false
+> set_instance_assignment -name ENABLE_OPEN_DRAIN -to led~output false
+> set_instance_assignment -name ENABLE_OPEN_DRAIN -to cam_xclk~output false
+> set_instance_assignment -name ENABLE_OPEN_DRAIN -to cam_pdown~output false
+> set_instance_assignment -name ENABLE_OPEN_DRAIN -to cam_reset~output false
+> set_instance_assignment -name ENABLE_OPEN_DRAIN -to e_tx[1]~output false
+> set_instance_assignment -name ENABLE_OPEN_DRAIN -to e_txen~output false
+> set_instance_assignment -name ENABLE_OPEN_DRAIN -to e_tx[0]~output false
+> set_instance_assignment -name CLKIN_FREQ -extension -to alt_pll_inst|altpll_component|auto_generated|pll1 50
+> set_location_assignment -to cam_data PIN_34
+> set_location_assignment -to cam_data[0] PIN_46
+> set_instance_assignment -to cam_data[0] -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_data[1] PIN_44
+> set_instance_assignment -to cam_data[1] -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_data[2] PIN_43
+> set_instance_assignment -to cam_data[2] -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_data[3] PIN_42
+> set_instance_assignment -to cam_data[3] -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_data[4] PIN_39
+> set_instance_assignment -to cam_data[4] -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_data[5] PIN_38
+> set_instance_assignment -to cam_data[5] -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_data[6] PIN_34
+> set_instance_assignment -to cam_data[6] -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_data[7] PIN_33
+> set_instance_assignment -to cam_data[7] -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_hsync PIN_30
+> set_instance_assignment -to cam_hsync -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_pclk PIN_31
+> set_instance_assignment -to cam_pclk -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_pdown PIN_50
+> set_instance_assignment -to cam_pdown -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_reset PIN_49
+> set_instance_assignment -to cam_reset -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_scl PIN_10
+> set_instance_assignment -to cam_scl -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_sda PIN_11
+> set_instance_assignment -to cam_sda -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_vsync PIN_28
+> set_instance_assignment -to cam_vsync -name IO_STANDARD "2.5 V"
+> set_location_assignment -to cam_xclk PIN_32
+> set_instance_assignment -to cam_xclk -name IO_STANDARD "2.5 V"
+> set_location_assignment -to clk PIN_25
+> set_instance_assignment -to clk -name IO_STANDARD "2.5 V"
+> set_location_assignment -to e_rx PIN_103
+> set_location_assignment -to e_rx[0] PIN_103
+> set_instance_assignment -to e_rx[0] -name IO_STANDARD "2.5 V"
+> set_location_assignment -to e_rx[1] PIN_104
+> set_instance_assignment -to e_rx[1] -name IO_STANDARD "2.5 V"
+> set_location_assignment -to e_rxclk PIN_105
+> set_instance_assignment -to e_rxclk -name IO_STANDARD "2.5 V"
+> set_location_assignment -to e_rxdv PIN_100
+> set_instance_assignment -to e_rxdv -name IO_STANDARD "2.5 V"
+> set_location_assignment -to e_rxer PIN_101
+> set_instance_assignment -to e_rxer -name IO_STANDARD "2.5 V"
+> set_location_assignment -to e_tx PIN_106
+> set_location_assignment -to e_tx[0] PIN_106
+> set_instance_assignment -to e_tx[0] -name IO_STANDARD "2.5 V"
+> set_location_assignment -to e_tx[1] PIN_110
+> set_instance_assignment -to e_tx[1] -name IO_STANDARD "2.5 V"
+> set_location_assignment -to e_txen PIN_111
+> set_instance_assignment -to e_txen -name IO_STANDARD "2.5 V"
+> set_location_assignment -to led PIN_7
+> set_instance_assignment -to led -name IO_STANDARD "2.5 V"
+> set_location_assignment -to rst_n PIN_91
+> set_instance_assignment -to rst_n -name IO_STANDARD "2.5 V"
+> set_instance_assignment -to altera_reserved_tck -name VIRTUAL_PIN ON
+> set_instance_assignment -to altera_reserved_tdi -name VIRTUAL_PIN ON
+> set_instance_assignment -to altera_reserved_tdo -name VIRTUAL_PIN ON
+> set_instance_assignment -to altera_reserved_tms -name VIRTUAL_PIN ON
+Info: Found tie LOW cell auto_hub|~GND.
+Info: Found GCLK net reset_init[5]~clkctrl_outclk (2).
+Info: Found GCLK net camera_if_inst|Equal4~0clkctrl_outclk (17).
+Info: Found GCLK net auto_signaltap_0|sld_signaltap_body|sld_signaltap_body|reset_all~clkctrl_outclk (15).
+Info: Found GCLK net alt_pll_inst|altpll_component|auto_generated|locked~clkctrl_outclk (23).
+Info: Found GCLK net alt_pll_inst|altpll_component|auto_generated|wire_pll1_clk[0]~clkctrl_outclk (11).
+Info: Found GCLK net clk~inputclkctrl_outclk (31).
+Info: Found GCLK net clk_25m~clkctrl_outclk (40).
+Info: Found GCLK net altera_internal_jtag~TCKUTAPclkctrl_outclk (49).
+Info: Top level output port cam_sda is identified as an inout.
+## CPU time: 0:0:0, REAL time: 0:0:1
+## Memory Usage: 862MB (862MB)
+Using design SDC file ./top_fpga.sdc.
+read_sdc -quiet "D:/jichuang/CNN/quartus_prj/SDC1.sdc"
+> create_clock -name clk_50m -period 20.000 [get_ports {clk}]
+> create_clock -name cmos_pclk -period 40.000 [get_ports {cam_pclk}]
+> create_clock -name clk_net -period 40.000 [get_ports {e_rxclk}]
+> derive_pll_clocks -create_base_clocks
+Info: Auto constraint PLL: create_generated_clock -name alt_pll_inst|altpll_component|auto_generated|pll1|clk[0] -divide_by 2 -add -source clk -master_clock clk_50m alt_pll_inst|altpll_component|auto_generated|pll1|clkout0.
+> 
+>  set pl_criticality_wratio  "5.00 5.00 5.00 1.00"
+> #set pl_max_iter_eco        "10 20 300 40 3  100 100 1"
+> ##et pl_eco_slack_crit      "99999. 1.00  0.10 8 0.03 35 0.01 170"
+> 
+> ##et pl_priority_compare  "2 2 2 3"
+> #set pl_priority_result   "2 1 1 0"
+> #set pl_priority_pass     "2 1 1 0"
+> #set pl_swap_cost_margin       "200.0  0.0  200.0  0.0  200.0  0.0   0.00  0.0"
+>  set pl_swap_wirelength_margin "200.0  0.0  200.0  0.0  200.0  0.0   020.0 -0.3  2000. 1.50"
+>  set pl_swap_congestion_margin "100.0  0.0  100.0  0.0  100.0  0.0   010.0 -0.3  1000. 1.25"
+> #set pl_criticality_beta "1.0 3.0 1.0  1.0 3.0 1.0  1.0 3.0 1.0  99999 3.0 3.0"
+> 
+>  set rt_retiming_idx         5
+>  set rt_converge_accelerator "3 1 0 0"
+> #set rt_pres_cost_ratio      "1.00 1.50  2.00 2.50"
+>  set rt_dly_ratio            "0.55 0.35 0.30  0.50 0.50 0.30"
+>  set rt_reroute_max_iter     "6  4 5  7 9  12"
+>  set rt_reroute_start_iter   "0  0 1  2 4  0 "
+>  set rt_quick_converge_ratio 0.00
+>  set pl_reuse_existing_placement true
+>  set pl_fix_bram_cells 0
+>  set pl_fix_mult_cells 0
+> #set pl_neighbor_swap_range "2  6  6  3 "
+>  set pl_pass_result "1 1 1 1"
+>  set pl_max_pass    "2 1 1 1 1"
+>  set pl_max_iter       10
+>  set pl_max_iter_part  20
+>  set pl_max_iter_final 20
+>  set pl_max_iter_legal 10
+>  set pl_max_iter_touch 00
+> #set pl_neighbor_swap_range "2  6  6  3 "
+> #set pl_spread_swap_max_iter "3 5  5 4"
+> #set pl_use_initial_place_once 0
+>  set rt_min_converge "7"
+>  set rt_optimize_max "3"
+>  set pl_useful_skew_level -1
+>  set rt_useful_skew_level 0
+>  set rt_useful_skew_bram         true
+>  set rt_useful_skew_io           false
+>  set rt_useful_skew_io_ireg      false
+>  set rt_useful_skew_io_oreg      false
+>  set rt_useful_skew_output_io    false
+>  set rt_useful_skew_input_io     false
+>  set rt_useful_skew_unconstraint "false false"
+>  set rt_useful_skew_max                "0 100"
+>  set rt_skew_crit_minmax               "0.00 1.00"
+> #set rt_useful_skew_setup_slac_margin  "1.00 1.00  1.00 1.00  1.00 0.10 0.50 0.10 0.70 0.10  1.00"
+> #set rt_useful_skew_hold_slack_margin  "0.10 0.10  0.30 0.30  0.30 0.30"
+> #set rt_useful_skew_hold_slack_ratio   "0.05 0.05  0.10 0.10  0.10 0.10"
+> # Minimal logical slice hold fix, only by routing to bram/mult, no IO delay
+> 
+>  set ta_cross_clock_slack "2 0"
+> 
+> #set pl_max_iter_hold_fix "30 1 3"
+> #set pl_hold_slack_margin  0.2
+> #set pl_setup_slack_margin "0.5 -1000."
+> #set pl_net_hold_fix_target "alta_bram alta_bram9k alta_mult"
+> 
+>  set rt_hold_slack_margin  "0.2 0.2    0.2 0.2    0.2 0.7   -1000. 0.0"
+>  set rt_setup_slack_margin "0.5 -1000. 0.5 -1000. 0.0 -1000."
+> #set rt_net_hold_crit_minmax "0.5 0.5"
+>  set rt_net_hold_budget_method 0
+>  set rt_net_hold_fix_target "alta_bram alta_bram9k alta_mult"
+> 
+> #set pl_net_hold_fix_clock false
+> #set pl_net_hold_fix_auto  false
+> #set pl_net_hold_fix_io    false
+> #set rt_net_hold_fix_start false
+> #set rt_net_hold_fix_clock false
+> #set rt_net_hold_fix_auto  false
+> #set rt_net_hold_fix_io    false
+Using AQF file ./alta_db/alta.aqf.
+> set_global_assignment -name DEVICE_IO_STANDARD "2.5 V"
+> set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS INPUT TRI-STATED"
+> set_global_assignment -name CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION "USE AS REGULAR IO"
+> set_global_assignment -name RESERVE_DATA0_AFTER_CONFIGURATION "USE AS REGULAR IO"
+> set_global_assignment -name RESERVE_DATA1_AFTER_CONFIGURATION "USE AS REGULAR IO"
+> set_global_assignment -name RESERVE_FLASH_NCE_AFTER_CONFIGURATION "USE AS REGULAR IO"
+> set_global_assignment -name RESERVE_DCLK_AFTER_CONFIGURATION "USE AS REGULAR IO"
+> read_qip "D:/jichuang/CNN/quartus_prj/./rtl/cmos1_fifo.qip"
+> set_global_assignment -name IP_TOOL_NAME "FIFO"
+> set_global_assignment -name IP_TOOL_VERSION "13.1"
+> set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "cmos1_fifo.v"]
+> set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) "cmos1_fifo_bb.v"]
+> read_qip "D:/jichuang/CNN/quartus_prj/./rtl/alt_pll.qip"
+> set_global_assignment -name IP_TOOL_NAME "ALTPLL"
+> set_global_assignment -name IP_TOOL_VERSION "13.1"
+> set_global_assignment -name VERILOG_FILE [file join $::quartus(qip_path) "alt_pll.v"]
+> set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) "alt_pll_bb.v"]
+> set_global_assignment -name MISC_FILE [file join $::quartus(qip_path) "alt_pll.ppf"]
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to altera_reserved_tck
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to altera_reserved_tdi
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to altera_reserved_tdo
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to altera_reserved_tms
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[0]
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[1]
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[2]
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[3]
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[4]
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[5]
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[6]
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[7]
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_hsync
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_pclk
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_pdown
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_reset
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_scl
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_sda
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_vsync
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_xclk
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to clk
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to e_rx[0]
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to e_rx[1]
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to e_rxclk
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to e_rxdv
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to e_rxer
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to e_tx[0]
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to e_tx[1]
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to e_txen
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to led
+> set_instance_assignment -name IO_STANDARD "2.5 V" -to rst_n
+> set_location_assignment PIN_16 -to altera_reserved_tck
+> set_location_assignment PIN_15 -to altera_reserved_tdi
+> set_location_assignment PIN_20 -to altera_reserved_tdo
+> set_location_assignment PIN_18 -to altera_reserved_tms
+Using ASF file top_fpga.asf.
+Warn: Auto constraint INTERNAL: create_clock -name Internal_generated_clock_altera_internal_jtag|tckutap -period 100.000 altera_internal_jtag|tckutap.
+Warn: Auto constraint INTERNAL: create_generated_clock -name Internal_generated_clock_clk_25m|Q -divide_by 2 -add -source e_rxclk -master_clock clk_net clk_25m|Q.
+Placement Statistics
+ Total  Logic    Counts  : 1683/11120 (15.1%)
+ Total  Logic    Tiles   : 136
+ Total  Other    Tiles   : 5
+ Total  Valid    Nets    : 2172 (908+1264)
+ Total  Valid    Fanouts : 9507 (4580+4927)
+ Total  Tile     Fanouts : 1799
+ Tile   Zip      Fanins  : 10 (0:29)
+ Tile   Zip      Fanouts : 20 (0:456)
+ Total  Ignored  Nets    : 1273
+ Total  Valid    Blocks  : 152 (134/16)
+ Total  Ignored  Blocks  : 2
+ Total  Zip Complexities : 528/2912 2.08/1096.58
+ Avg    Zip   Bottleneck : 3.29 21.32
+ Avg    Net   Bottleneck : 13.17 394.96
+Iter #1/1 ...
+Pass 1 #1/2 ...
+Partitioning...
+ step = 4, partition : 2,2
+....................
+ step = 5, partition : 2,2
+....................
+
+## CPU time: 0:0:21, REAL time: 0:0:22
+Pass 1 #2/2 ...
+Partitioning...
+ step = 4, partition : 2,2
+....................
+ step = 5, partition : 2,2
+....................
+
+## CPU time: 0:0:21, REAL time: 0:0:22
+Pass 2 #1/1 ...
+Legalization and Swapping...
+..........
+
+## CPU time: 0:0:14, REAL time: 0:0:15
+Pass 3 #1/1 ...
+Touchup...
+
+
+## CPU time: 0:0:0, REAL time: 0:0:0
+Pass 4 #1/1 ...
+Optimization...
+............................................................
+Finishing...
+
+## CPU time: 0:0:9, REAL time: 0:0:10
+Total wire cost after placement: 14.4:0.72:0.0239997(14.4:0.72) 4267.08(1108.27)+8850(7)+2316.37 2689.89(427.449)+-321
+
+*** Post Placement Timing Report ***
+=== User constraints ===
+Fmax report
+  User constraint:  10.000MHz, Fmax:  58.241MHz, Clock: Internal_generated_clock_altera_internal_jtag|tckutap
+  User constraint:  25.000MHz, Fmax:  97.571MHz, Clock: alt_pll_inst|altpll_component|auto_generated|pll1|clk[0]
+  User constraint:  50.000MHz, Fmax: 178.571MHz, Clock: clk_50m
+  User constraint:  25.000MHz, Fmax: 305.811MHz, Clock: clk_net
+  User constraint:  25.000MHz, Fmax: 130.208MHz, Clock: cmos_pclk
+
+Clock transfer report:
+  Worst setup:  41.415, with clock Internal_generated_clock_altera_internal_jtag|tckutap
+  Worst setup:  29.751, with clock alt_pll_inst|altpll_component|auto_generated|pll1|clk[0]
+  Worst setup:  14.400, with clock clk_50m
+  Worst setup:  18.365, with clock clk_net
+  Worst setup:  32.320, with clock cmos_pclk
+
+  Worst  hold:   0.550, with clock Internal_generated_clock_altera_internal_jtag|tckutap
+  Worst  hold:   0.550, with clock alt_pll_inst|altpll_component|auto_generated|pll1|clk[0]
+  Worst  hold:   0.550, with clock clk_50m
+  Worst  hold:   0.550, with clock clk_net
+  Worst  hold:   0.024, with clock cmos_pclk
+
+=== Auto constraints ===
+Fmax report
+  User constraint:  12.500MHz, Fmax:  63.894MHz, Clock: Internal_generated_clock_clk_25m|Q
+
+Clock transfer report:
+  Worst setup:  64.349, with clock Internal_generated_clock_clk_25m|Q
+  Worst setup:  31.981, from clock Internal_generated_clock_clk_25m|Q to clk_net
+  Worst setup:  30.857, from clock Internal_generated_clock_clk_25m|Q to cmos_pclk
+
+  Worst  hold:   0.292, with clock Internal_generated_clock_clk_25m|Q
+  Worst  hold:   0.550, from clock Internal_generated_clock_clk_25m|Q to clk_net
+  Worst  hold:   7.288, from clock Internal_generated_clock_clk_25m|Q to cmos_pclk
+
+Coverage report
+  User constraints covered 4415 connections out of 6925 total, coverage: 63.8%
+  Auto constraints covered 6472 connections out of 6925 total, coverage: 93.5%
+
+
+Hold from cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|wrptr_g[1] to cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|fifo_ram|ram_block11a2, clock cmos_pclk, constraint 0.000, skew 0.184, data 0.800
+  Slack:   0.024
+    Arrival Time:    3.887
+    Required Time:   3.863
+
+*** End Timing Report ***
+
+route_design -dump ./alta_db/route.tx -replace ./alta_db/replace.tx 
+Route Design Statistics
+ Total Routing Nets : 2175
+ Fanout     Average : 3.38 (1..90)
+ Max   Fanout  Net  : camera_if_inst|u_I2C_AV_Config|LUT_INDEX[1]
+ Logic       Slices : 1683/16624 (10.1%)
+
+Routing...
+ Budget Useful Skew...
+## CPU time: 0:0:2, REAL time: 0:0:3
+ iter = 1/1, route#: 2175, violation# : 912, overflow# : 815, conflict# : 862, node#: 11725
+## CPU time: 0:0:4, REAL time: 0:0:5
+ iter = 2/2, route#: 2175, violation# : 573, overflow# : 566, conflict# : 560, node#: 12296
+## CPU time: 0:0:6, REAL time: 0:0:7
+ iter = 3/3, route#: 2175, violation# : 243, overflow# : 242, conflict# : 244, node#: 12771
+## CPU time: 0:0:7, REAL time: 0:0:9
+ iter = 4/4, route#: 2175, violation# : 45, overflow# : 45, conflict# : 49, node#: 13056
+## CPU time: 0:0:9, REAL time: 0:0:11
+ iter = 5/5, route#: 2175, violation# : 3, overflow# : 3, conflict# : 4, node#: 13117
+## CPU time: 0:0:11, REAL time: 0:0:13
+ iter = 6/6, route#: 2175, violation# : 0, overflow# : 0, conflict# : 0, node#: 13127
+## CPU time: 0:0:12, REAL time: 0:0:14
+ iter = 7/1, route#: 36, violation# : 116, overflow# : 107, conflict# : 38, node#: 12953
+## CPU time: 0:0:13, REAL time: 0:0:15
+ iter = 8/2, route#: 64, violation# : 82, overflow# : 82, conflict# : 43, node#: 12993
+## CPU time: 0:0:14, REAL time: 0:0:15
+ iter = 9/3, route#: 35, violation# : 18, overflow# : 18, conflict# : 13, node#: 13090
+## CPU time: 0:0:15, REAL time: 0:0:16
+ iter = 10/4, route#: 22, violation# : 4, overflow# : 4, conflict# : 5, node#: 13123
+## CPU time: 0:0:16, REAL time: 0:0:18
+ iter = 11/5, route#: 17, violation# : 0, overflow# : 0, conflict# : 0, node#: 13133
+## CPU time: 0:0:17, REAL time: 0:0:19
+ iter = 12/1, route#: 37, violation# : 112, overflow# : 108, conflict# : 43, node#: 12969
+## CPU time: 0:0:18, REAL time: 0:0:20
+ iter = 13/2, route#: 69, violation# : 82, overflow# : 81, conflict# : 41, node#: 12993
+## CPU time: 0:0:19, REAL time: 0:0:20
+ iter = 14/3, route#: 42, violation# : 15, overflow# : 15, conflict# : 18, node#: 13092
+## CPU time: 0:0:20, REAL time: 0:0:21
+ iter = 15/4, route#: 19, violation# : 2, overflow# : 2, conflict# : 4, node#: 13110
+## CPU time: 0:0:21, REAL time: 0:0:23
+ iter = 16/5, route#: 16, violation# : 0, overflow# : 0, conflict# : 0, node#: 13114
+## CPU time: 0:0:22, REAL time: 0:0:24
+ iter = 17/1, route#: 41, violation# : 123, overflow# : 116, conflict# : 47, node#: 12950
+## CPU time: 0:0:23, REAL time: 0:0:25
+ iter = 18/2, route#: 77, violation# : 97, overflow# : 97, conflict# : 50, node#: 12975
+## CPU time: 0:0:24, REAL time: 0:0:26
+ iter = 19/3, route#: 38, violation# : 25, overflow# : 25, conflict# : 24, node#: 13098
+## CPU time: 0:0:25, REAL time: 0:0:27
+ iter = 20/4, route#: 22, violation# : 1, overflow# : 1, conflict# : 2, node#: 13133
+## CPU time: 0:0:26, REAL time: 0:0:28
+ iter = 21/5, route#: 18, violation# : 0, overflow# : 0, conflict# : 0, node#: 13130
+## CPU time: 0:0:28, REAL time: 0:0:30
+ iter = 22/2, route#: 41, violation# : 75, overflow# : 75, conflict# : 34, node#: 13011
+## CPU time: 0:0:28, REAL time: 0:0:30
+ iter = 23/3, route#: 32, violation# : 14, overflow# : 14, conflict# : 11, node#: 13071
+## CPU time: 0:0:30, REAL time: 0:0:32
+ iter = 24/4, route#: 18, violation# : 0, overflow# : 0, conflict# : 0, node#: 13102
+## CPU time: 0:0:31, REAL time: 0:0:33
+ iter = 25/2, route#: 49, violation# : 89, overflow# : 88, conflict# : 45, node#: 12994
+## CPU time: 0:0:32, REAL time: 0:0:34
+ iter = 26/3, route#: 39, violation# : 31, overflow# : 31, conflict# : 19, node#: 13074
+## CPU time: 0:0:32, REAL time: 0:0:34
+ iter = 27/4, route#: 22, violation# : 7, overflow# : 7, conflict# : 11, node#: 13102
+## CPU time: 0:0:33, REAL time: 0:0:35
+ iter = 28/5, route#: 15, violation# : 2, overflow# : 2, conflict# : 4, node#: 13106
+## CPU time: 0:0:35, REAL time: 0:0:36
+ iter = 29/6, route#: 13, violation# : 0, overflow# : 0, conflict# : 0, node#: 13111
+## CPU time: 0:0:36, REAL time: 0:0:38
+ iter = 30/1, route#: 46, violation# : 128, overflow# : 119, conflict# : 46, node#: 12947
+## CPU time: 0:0:36, REAL time: 0:0:38
+ iter = 31/2, route#: 61, violation# : 67, overflow# : 67, conflict# : 36, node#: 13013
+## CPU time: 0:0:37, REAL time: 0:0:39
+ iter = 32/3, route#: 34, violation# : 28, overflow# : 28, conflict# : 20, node#: 13081
+## CPU time: 0:0:38, REAL time: 0:0:40
+ iter = 33/4, route#: 21, violation# : 9, overflow# : 9, conflict# : 7, node#: 13130
+## CPU time: 0:0:40, REAL time: 0:0:42
+ iter = 34/5, route#: 17, violation# : 0, overflow# : 0, conflict# : 0, node#: 13130
+Optimizing...
+...
+
+Done
+
+*** Post Routing Timing Report ***
+=== User constraints ===
+Fmax report
+  User constraint:  10.000MHz, Fmax:  57.524MHz, Clock: Internal_generated_clock_altera_internal_jtag|tckutap
+  User constraint:  25.000MHz, Fmax: 106.769MHz, Clock: alt_pll_inst|altpll_component|auto_generated|pll1|clk[0]
+  User constraint:  50.000MHz, Fmax: 190.731MHz, Clock: clk_50m
+  User constraint:  25.000MHz, Fmax: 315.856MHz, Clock: clk_net
+  User constraint:  25.000MHz, Fmax: 130.634MHz, Clock: cmos_pclk
+
+Clock transfer report:
+  Worst setup:  41.308, with clock Internal_generated_clock_altera_internal_jtag|tckutap
+  Worst setup:  30.634, with clock alt_pll_inst|altpll_component|auto_generated|pll1|clk[0]
+  Worst setup:  14.757, with clock clk_50m
+  Worst setup:  18.417, with clock clk_net
+  Worst setup:  32.345, with clock cmos_pclk
+
+  Worst  hold:   0.550, with clock Internal_generated_clock_altera_internal_jtag|tckutap
+  Worst  hold:   0.550, with clock alt_pll_inst|altpll_component|auto_generated|pll1|clk[0]
+  Worst  hold:   0.550, with clock clk_50m
+  Worst  hold:   0.550, with clock clk_net
+  Worst  hold:   0.255, with clock cmos_pclk
+
+=== Auto constraints ===
+Fmax report
+  User constraint:  12.500MHz, Fmax:  59.659MHz, Clock: Internal_generated_clock_clk_25m|Q
+
+Clock transfer report:
+  Worst setup:  63.238, with clock Internal_generated_clock_clk_25m|Q
+  Worst setup:  30.676, from clock Internal_generated_clock_clk_25m|Q to clk_net
+  Worst setup:  30.010, from clock Internal_generated_clock_clk_25m|Q to cmos_pclk
+
+  Worst  hold:   0.292, with clock Internal_generated_clock_clk_25m|Q
+  Worst  hold:   0.550, from clock Internal_generated_clock_clk_25m|Q to clk_net
+  Worst  hold:   7.874, from clock Internal_generated_clock_clk_25m|Q to cmos_pclk
+
+Coverage report
+  User constraints covered 4415 connections out of 6925 total, coverage: 63.8%
+  Auto constraints covered 6472 connections out of 6925 total, coverage: 93.5%
+
+
+Hold from cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|wrptr_g[2] to cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|fifo_ram|ram_block11a2, clock cmos_pclk, constraint 0.000, skew 0.127, data 1.003
+  Slack:   0.255
+    Arrival Time:    4.377
+    Required Time:   4.122
+
+*** End Timing Report ***
+
+Wed Feb 07 22:12:45 2024
+Warn: User constraints coverage is too low at 63.8%.
+> 
+> if { [file exists "./${DESIGN}.post.asf"] } {
+  alta::tcl_highlight "Using post-ASF file ${DESIGN}.post.asf.\n"
+  source "./${DESIGN}.post.asf"
+}
+Using post-ASF file top_fpga.post.asf.
+> date_time
+Wed Feb 07 22:13:22 2024
+> exit
+
+Total 0 fatals, 0 errors, 3 warnings, 15 infos.

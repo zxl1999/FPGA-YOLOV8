@@ -1,0 +1,32 @@
+//file name:	top_fpga.v
+//author:		ETree
+//date:			2017.10.1
+//function:		top file of project
+//log:
+
+module top_fpga(
+	//global signal                           
+	input  clk,
+	input  rst_n,
+	
+	//GNET
+	inout MDIO,
+	output MDC,
+	output txer,
+	output txen,
+	output txclk,
+	output [7:0] tx,
+	output greset,
+	input gtx_clk,
+
+	input rxer,
+	input rxdv,
+	input rxclk,
+	input [7:0] rx
+	
+);
+
+
+endmodule
+
+

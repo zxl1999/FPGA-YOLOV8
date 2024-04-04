@@ -1,0 +1,4 @@
+create_clock -name clk_50m -period 20.000 [get_ports {clk}]
+create_clock -name clk_125m -period 8.000 [get_ports {rxclk}]
+create_clock -name cmos_pclk -period 20.000 [get_ports {cam_pclk}]
+

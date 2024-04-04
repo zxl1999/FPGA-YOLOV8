@@ -1,0 +1,85 @@
+=== User constraints ===
+Fmax report
+  User constraint:  25.000MHz, Fmax: 103.734MHz, Clock: alt_pll_inst|altpll_component|auto_generated|pll1|clk[0]
+  User constraint:  50.000MHz, Fmax: 260.213MHz, Clock: clk_50m
+  User constraint:  25.000MHz, Fmax: 296.560MHz, Clock: clk_net
+  User constraint:  25.000MHz, Fmax: 123.594MHz, Clock: cmos_pclk
+
+Clock transfer report:
+  Worst setup:  30.360, with clock alt_pll_inst|altpll_component|auto_generated|pll1|clk[0]
+  Worst setup:  16.157, with clock clk_50m
+  Worst setup:  18.314, with clock clk_net
+  Worst setup:  31.909, with clock cmos_pclk
+
+
+=== Auto constraints ===
+Fmax report
+  User constraint:  12.500MHz, Fmax:  63.028MHz, Clock: Internal_generated_clock_clk_25m|Q
+
+Clock transfer report:
+  Worst setup:  64.134, with clock Internal_generated_clock_clk_25m|Q
+  Worst setup:  33.081, from clock Internal_generated_clock_clk_25m|Q to clk_net
+  Worst setup:  33.947, from clock Internal_generated_clock_clk_25m|Q to cmos_pclk
+
+
+Coverage report
+  User constraints covered 2056 connections out of 4381 total, coverage: 46.9%
+  Auto constraints covered 3950 connections out of 4381 total, coverage: 90.2%
+
+
+Setup from camera_if_inst|u_I2C_AV_Config|LUT_INDEX[4] to camera_if_inst|u_I2C_AV_Config|u0|I2C_BIT, clock alt_pll_inst|altpll_component|auto_generated|pll1|clk[0], constraint 40.000, skew -0.366, data 9.024
+  Slack:  30.360
+    Arrival Time:    8.943
+        0.000    0.000   R                         Launch Clock Edge
+      Launch Clock Path:
+        0.000    0.000   RR                             top_fpga|clk =>                          clk~input|padio 
+        0.658    0.658   RR                          clk~input|padio =>                        clk~input|combout 
+        1.424    0.766   RR                        clk~input|combout => alt_pll_inst|altpll_component|auto_generated|pll1|clkin 
+      Compensation Path:
+       -3.986   -5.410   RR alt_pll_inst|altpll_component|auto_generated|pll1|clkfb => alt_pll_inst|altpll_component|auto_generated|pll1|clkfbout 
+       -3.986   -0.000   RR alt_pll_inst|altpll_component|auto_generated|pll1|clkfbout => alt_pll_inst|altpll_component|auto_generated|pll1|clkfb 
+      Compensation Path End
+       -3.586    0.400   RR alt_pll_inst|altpll_component|auto_generated|pll1|clkin => alt_pll_inst|altpll_component|auto_generated|pll1|clkout0 D
+       -2.699    0.887   RR alt_pll_inst|altpll_component|auto_generated|pll1|clkout0 => alt_pll_inst|altpll_component|auto_generated|wire_pll1_clk[0]~clkctrl|inclk D
+       -2.699    0.000   RR alt_pll_inst|altpll_component|auto_generated|wire_pll1_clk[0]~clkctrl|inclk => alt_pll_inst|altpll_component|auto_generated|wire_pll1_clk[0]~clkctrl|outclk 
+       -0.350    2.349   RR alt_pll_inst|altpll_component|auto_generated|wire_pll1_clk[0]~clkctrl|outclk =>              clken_ctrl_X18_Y17_N1|ClkIn 
+       -0.206    0.144   RR              clken_ctrl_X18_Y17_N1|ClkIn =>             clken_ctrl_X18_Y17_N1|ClkOut 
+       -0.081    0.125   RR             clken_ctrl_X18_Y17_N1|ClkOut => camera_if_inst|u_I2C_AV_Config|LUT_INDEX[4]|Clk 
+      Data Path:
+        0.119    0.200   RR camera_if_inst|u_I2C_AV_Config|LUT_INDEX[4]|Clk => camera_if_inst|u_I2C_AV_Config|LUT_INDEX[4]|Q D
+        1.457    1.338   RR camera_if_inst|u_I2C_AV_Config|LUT_INDEX[4]|Q => camera_if_inst|u_I2C_AV_Config|u_I2C_OV7670_Config|WideOr5~7|D 
+        1.569    0.112   RF camera_if_inst|u_I2C_AV_Config|u_I2C_OV7670_Config|WideOr5~7|D => camera_if_inst|u_I2C_AV_Config|u_I2C_OV7670_Config|WideOr5~7|LutOut 
+        1.952    0.383   FF camera_if_inst|u_I2C_AV_Config|u_I2C_OV7670_Config|WideOr5~7|LutOut => camera_if_inst|u_I2C_AV_Config|u_I2C_OV7670_Config|WideOr5~8|B 
+        2.291    0.339   FF camera_if_inst|u_I2C_AV_Config|u_I2C_OV7670_Config|WideOr5~8|B => camera_if_inst|u_I2C_AV_Config|u_I2C_OV7670_Config|WideOr5~8|LutOut 
+        2.620    0.329   FF camera_if_inst|u_I2C_AV_Config|u_I2C_OV7670_Config|WideOr5~8|LutOut => camera_if_inst|u_I2C_AV_Config|u_I2C_OV7670_Config|WideOr5~10|C 
+        2.870    0.250   FR camera_if_inst|u_I2C_AV_Config|u_I2C_OV7670_Config|WideOr5~10|C => camera_if_inst|u_I2C_AV_Config|u_I2C_OV7670_Config|WideOr5~10|LutOut 
+        3.840    0.970   RR camera_if_inst|u_I2C_AV_Config|u_I2C_OV7670_Config|WideOr5~10|LutOut => camera_if_inst|u_I2C_AV_Config|u0|Mux1~17|C 
+        4.073    0.233   RR camera_if_inst|u_I2C_AV_Config|u0|Mux1~17|C => camera_if_inst|u_I2C_AV_Config|u0|Mux1~17|LutOut 
+        5.356    1.283   RR camera_if_inst|u_I2C_AV_Config|u0|Mux1~17|LutOut => camera_if_inst|u_I2C_AV_Config|u0|Mux1~18|D 
+        5.475    0.119   RR camera_if_inst|u_I2C_AV_Config|u0|Mux1~18|D => camera_if_inst|u_I2C_AV_Config|u0|Mux1~18|LutOut 
+        6.445    0.970   RR camera_if_inst|u_I2C_AV_Config|u0|Mux1~18|LutOut => camera_if_inst|u_I2C_AV_Config|u0|Mux1~19|C 
+        6.678    0.233   RR camera_if_inst|u_I2C_AV_Config|u0|Mux1~19|C => camera_if_inst|u_I2C_AV_Config|u0|Mux1~19|LutOut 
+        7.052    0.374   RR camera_if_inst|u_I2C_AV_Config|u0|Mux1~19|LutOut => camera_if_inst|u_I2C_AV_Config|u0|Mux1~21|D 
+        7.171    0.119   RR camera_if_inst|u_I2C_AV_Config|u0|Mux1~21|D => camera_if_inst|u_I2C_AV_Config|u0|Mux1~21|LutOut 
+        7.545    0.374   RR camera_if_inst|u_I2C_AV_Config|u0|Mux1~21|LutOut => camera_if_inst|u_I2C_AV_Config|u0|Mux1~29|D 
+        7.664    0.119   RR camera_if_inst|u_I2C_AV_Config|u0|Mux1~29|D => camera_if_inst|u_I2C_AV_Config|u0|Mux1~29|LutOut 
+        8.943    1.279   RR camera_if_inst|u_I2C_AV_Config|u0|Mux1~29|LutOut => camera_if_inst|u_I2C_AV_Config|u0|I2C_BIT|C E
+    Required Time:  39.303
+       40.000   40.000   R                          Latch Clock Edge
+      Latch Clock Path:
+       40.000    0.000   RR                             top_fpga|clk =>                          clk~input|padio 
+       40.658    0.658   RR                          clk~input|padio =>                        clk~input|combout 
+       41.285    0.627   RR                        clk~input|combout => alt_pll_inst|altpll_component|auto_generated|pll1|clkin 
+      Compensation Path:
+       35.764   -5.521   RR alt_pll_inst|altpll_component|auto_generated|pll1|clkfb => alt_pll_inst|altpll_component|auto_generated|pll1|clkfbout 
+       35.764   -0.000   RR alt_pll_inst|altpll_component|auto_generated|pll1|clkfbout => alt_pll_inst|altpll_component|auto_generated|pll1|clkfb 
+      Compensation Path End
+       36.164    0.400   RR alt_pll_inst|altpll_component|auto_generated|pll1|clkin => alt_pll_inst|altpll_component|auto_generated|pll1|clkout0 D
+       37.040    0.876   RR alt_pll_inst|altpll_component|auto_generated|pll1|clkout0 => alt_pll_inst|altpll_component|auto_generated|wire_pll1_clk[0]~clkctrl|inclk D
+       37.040    0.000   RR alt_pll_inst|altpll_component|auto_generated|wire_pll1_clk[0]~clkctrl|inclk => alt_pll_inst|altpll_component|auto_generated|wire_pll1_clk[0]~clkctrl|outclk 
+       39.286    2.246   RR alt_pll_inst|altpll_component|auto_generated|wire_pll1_clk[0]~clkctrl|outclk =>              clken_ctrl_X16_Y18_N0|ClkIn 
+       39.428    0.142   RR              clken_ctrl_X16_Y18_N0|ClkIn =>             clken_ctrl_X16_Y18_N0|ClkOut 
+       39.553    0.125   RR             clken_ctrl_X16_Y18_N0|ClkOut => camera_if_inst|u_I2C_AV_Config|u0|I2C_BIT|Clk 
+       39.042   -0.511   R                                     Setup
+       39.303    0.261                               Clock Variation
+

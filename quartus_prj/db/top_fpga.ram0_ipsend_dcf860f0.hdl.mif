@@ -1,0 +1,19 @@
+-- begin_signature
+-- ipsend
+-- end_signature
+WIDTH=8;
+DEPTH=8;
+
+ADDRESS_RADIX=UNS;
+DATA_RADIX=BIN;
+
+CONTENT BEGIN
+	7 :	11010101;
+	6 :	01010101;
+	5 :	01010101;
+	4 :	01010101;
+	3 :	01010101;
+	2 :	01010101;
+	1 :	01010101;
+	0 :	01010101;
+END;

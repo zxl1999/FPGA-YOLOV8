@@ -1,0 +1,44 @@
+set_global_assignment -name DEVICE_IO_STANDARD "2.5 V"
+set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS INPUT TRI-STATED"
+set_global_assignment -name CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name RESERVE_DATA0_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name RESERVE_DATA1_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name RESERVE_FLASH_NCE_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_global_assignment -name RESERVE_DCLK_AFTER_CONFIGURATION "USE AS REGULAR IO"
+read_qip "D:/jichuang/CNN/quartus_prj/./rtl/cmos1_fifo.qip"
+read_qip "D:/jichuang/CNN/quartus_prj/./rtl/alt_pll.qip"
+set_instance_assignment -name IO_STANDARD "2.5 V" -to altera_reserved_tck
+set_instance_assignment -name IO_STANDARD "2.5 V" -to altera_reserved_tdi
+set_instance_assignment -name IO_STANDARD "2.5 V" -to altera_reserved_tdo
+set_instance_assignment -name IO_STANDARD "2.5 V" -to altera_reserved_tms
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[0]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[1]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[2]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[3]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[4]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[5]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[6]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_data[7]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_hsync
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_pclk
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_pdown
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_reset
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_scl
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_sda
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_vsync
+set_instance_assignment -name IO_STANDARD "2.5 V" -to cam_xclk
+set_instance_assignment -name IO_STANDARD "2.5 V" -to clk
+set_instance_assignment -name IO_STANDARD "2.5 V" -to e_rx[0]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to e_rx[1]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to e_rxclk
+set_instance_assignment -name IO_STANDARD "2.5 V" -to e_rxdv
+set_instance_assignment -name IO_STANDARD "2.5 V" -to e_rxer
+set_instance_assignment -name IO_STANDARD "2.5 V" -to e_tx[0]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to e_tx[1]
+set_instance_assignment -name IO_STANDARD "2.5 V" -to e_txen
+set_instance_assignment -name IO_STANDARD "2.5 V" -to led
+set_instance_assignment -name IO_STANDARD "2.5 V" -to rst_n
+set_location_assignment PIN_16 -to altera_reserved_tck
+set_location_assignment PIN_15 -to altera_reserved_tdi
+set_location_assignment PIN_20 -to altera_reserved_tdo
+set_location_assignment PIN_18 -to altera_reserved_tms

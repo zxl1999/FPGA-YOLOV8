@@ -1,0 +1,42 @@
+=== User constraints ===
+
+Clock transfer report:
+  Worst  hold:   0.550, with clock Internal_generated_clock_altera_internal_jtag|tckutap
+  Worst  hold:   0.550, with clock alt_pll_inst|altpll_component|auto_generated|pll1|clk[0]
+  Worst  hold:   0.550, with clock clk_50m
+  Worst  hold:   0.550, with clock clk_net
+  Worst  hold:   0.255, with clock cmos_pclk
+
+=== Auto constraints ===
+
+Clock transfer report:
+  Worst  hold:   0.292, with clock Internal_generated_clock_clk_25m|Q
+  Worst  hold:   0.550, from clock Internal_generated_clock_clk_25m|Q to clk_net
+  Worst  hold:   7.874, from clock Internal_generated_clock_clk_25m|Q to cmos_pclk
+
+Coverage report
+  User constraints covered 4415 connections out of 6925 total, coverage: 63.8%
+  Auto constraints covered 6472 connections out of 6925 total, coverage: 93.5%
+
+
+Hold from cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|wrptr_g[2] to cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|fifo_ram|ram_block11a2, clock cmos_pclk, constraint 0.000, skew 0.127, data 1.003
+  Slack:   0.255
+    Arrival Time:    4.377
+        0.000    0.000   R                         Launch Clock Edge
+      Launch Clock Path:
+        0.000    0.000   RR                        top_fpga|cam_pclk =>                     cam_pclk~input|padio 
+        0.798    0.798   RR                     cam_pclk~input|padio =>                   cam_pclk~input|combout 
+        3.160    2.362   RR                   cam_pclk~input|combout =>               clken_ctrl_X16_Y9_N0|ClkIn 
+        3.302    0.142   RR               clken_ctrl_X16_Y9_N0|ClkIn =>              clken_ctrl_X16_Y9_N0|ClkOut 
+        3.427    0.125   RR              clken_ctrl_X16_Y9_N0|ClkOut => cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|wrptr_g[2]|Clk 
+      Data Path:
+        3.648    0.221   RF cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|wrptr_g[2]|Clk => cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|wrptr_g[2]|Q D
+        4.377    0.729   FF cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|wrptr_g[2]|Q => cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|fifo_ram|ram_block11a2|AddressA[3] E
+    Required Time:   4.122
+        0.000    0.000   R                          Latch Clock Edge
+      Latch Clock Path:
+        0.000    0.000   RR                        top_fpga|cam_pclk =>                     cam_pclk~input|padio 
+        0.798    0.798   RR                     cam_pclk~input|padio =>                   cam_pclk~input|combout 
+        3.554    2.756   RR                   cam_pclk~input|combout => cmos1_fifo_inst|dcfifo_mixed_widths_component|auto_generated|fifo_ram|ram_block11a2|Clk0 
+        4.122    0.568   R                                      Hold
+

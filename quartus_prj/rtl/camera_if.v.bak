@@ -1,0 +1,228 @@
+//file name			: camera_if.v
+//data				: 2015.11.22
+//author				: ETree
+//function			: camera interface 
+//log					:
+
+module camera_if #(
+	parameter IMG_H = 640
+)
+(
+	//global signal
+	input clk,
+	input rst_n,
+	
+	//camera port	
+	output cam_scl,
+	inout  cam_sda,
+	input [7:0] cam_data,
+	input cam_vsync,	
+	input cam_hsync,
+	input cam_pclk,
+	output cam_xclk,
+	output cam_pdown,
+	output cam_reset,
+	
+	//host port
+	output [7:0] cam_data_out,
+	output cam_vsync_out,
+	output cam_hsync_out,
+	
+	output [15:0] line_count,
+	input cam_en
+);
+
+reg [7:0] cam_data_r0;
+reg [7:0] cam_data_r1;
+reg [4:0] cam_hsync_r;
+reg [4:0] cam_vsync_r;
+
+reg [15:0] v_cnt;
+reg [15:0] h_cnt;
+
+wire  init_done;
+wire	i2c_exc;
+wire	i2c_done;
+wire	[7:0]	i2c_addr;
+wire	[7:0]	i2c_data_w;
+wire	[7:0]	i2c_data_r;
+
+wire	scl_wr;
+wire	sda_wr;
+wire	sda_dir;
+
+
+always @(posedge cam_pclk)
+begin
+	cam_data_r0 <= cam_data;
+	cam_data_r1 <= cam_data_r0;
+end
+
+always @(posedge cam_pclk)
+begin
+	cam_hsync_r <= {cam_hsync_r[3:0],cam_hsync};
+	cam_vsync_r <= {cam_vsync_r[3:0],~cam_vsync};
+end
+
+
+always @(posedge cam_pclk)
+	if(cam_hsync_pos)
+		h_cnt <= 0;
+	else
+		h_cnt <= h_cnt + 1'b1;
+
+always @(posedge cam_pclk)
+	if(cam_vsync_pos)
+		v_cnt <= 0;
+	else if(h_cnt==(IMG_H-1))
+		v_cnt <= v_cnt + 1'b1;
+	else
+		v_cnt <= v_cnt;
+
+assign line_count = v_cnt;		
+		
+wire cam_hsync_pos = (cam_hsync_r[3:2]==2'b01);
+wire cam_vsync_pos = (cam_vsync_r[1:0]==2'b01);
+
+assign cam_data_out =  cam_data_r1;
+assign cam_vsync_out = cam_vsync_r[1];
+assign cam_hsync_out = cam_hsync_r[1];//(h_cnt>=0 && h_cnt<320 && v_cnt>=0 && v_cnt<240)?
+
+assign	cam_reset = 1'b1;		//cmos work state(5ms delay for sccb config)
+assign   cam_pdown = 1'b0;		//cmos power on	
+assign	cam_xclk = clk;		//25MHz XCLK
+
+//i2c_port i2c_port_inst
+//(
+//	.clk(clk) ,	// input  clk_sig
+//	.rst_n(rst_n) ,					// input  rst_n_sig
+//	.i2c_scl(cam_scl) ,			// output  i2c_scl_sig
+//	.i2c_sda(cam_sda) 			// inout  i2c_sda_sig
+//);
+
+
+iic_com  iic2(
+		.clk	(clk),
+		.rst_n(rst_n),
+		.scl	(cam_scl),
+		.sda_out(cam_sda)		
+		);
+
+//--------frame count--------
+reg [25:0] cnt_1sec;
+reg [7:0] cnt_freq;
+(* noprune *)reg [7:0] reg_frame_freq;
+
+reg [1:0] cmos_vsync_r;
+
+always @(posedge clk)
+	cmos_vsync_r <= {cmos_vsync_r[0],cam_vsync};
+	
+wire cmos_vsync_pos = (cmos_vsync_r==2'b01);	
+
+always @(posedge clk)
+	if(~rst_n)
+		cnt_1sec <= 0;
+	else if(cnt_1sec==25_000_000)
+		cnt_1sec <= 0;
+	else
+		cnt_1sec <= cnt_1sec + 1'b1;
+
+		
+always @(posedge clk)
+	if(~rst_n)
+	begin
+		cnt_freq <= 0;
+	end
+	else if(cnt_1sec<25_000_000)
+	begin
+		if(cmos_vsync_pos)
+			cnt_freq <= cnt_freq + 1'b1;
+		else
+			cnt_freq <= cnt_freq;
+	end
+	else
+		cnt_freq <= 0;
+
+always @(posedge clk)
+	if(~rst_n)
+		reg_frame_freq <= 0;
+	else if(cnt_1sec==24_999_999)
+		reg_frame_freq <= cnt_freq;
+	else
+		reg_frame_freq <= reg_frame_freq;
+
+
+
+//test video data
+parameter IMG_HDISP	= 640;
+parameter IMG_VDISP =  480; 
+
+//RGB565
+parameter BLACK 		= 16'h00000_000000_00000;
+parameter RED 			= 16'b00000_000000_11111;//24'h00_00_ff;
+parameter GREEN 		= 16'b00000_111111_00000;//24'h00_ff_00;
+parameter YELLOW 		= 16'b00000_111111_11111;//24'h00_ff_ff;
+parameter BLUE 		= 16'b11111_000000_00000;//24'hff_00_00;
+parameter LIGTH_RED 	= 16'b11111_000000_11111;//24'hff_00_ff;
+parameter LIGHT_BLUE = 16'b11111_111111_00000;//24'hff_ff_00;
+parameter WHITE 		= 16'b11111_111111_11111;//24'hff_ff_ff;
+
+reg [15:0] vcnt;
+reg [15:0] hcnt;
+reg vsync;
+reg hsync;
+(* noprune *)reg [15:0] data;
+
+always @(posedge cam_pclk)
+	if(hcnt>=(IMG_HDISP+300))
+		hcnt <= 0;
+	else
+		hcnt <= hcnt + 1'b1;
+	
+always @(posedge cam_pclk)
+	if(hcnt>=(IMG_HDISP+300))
+		if(vcnt>=(IMG_VDISP+150))
+			vcnt <= 0;
+		else
+			vcnt <= vcnt + 1'b1;
+	else
+		vcnt <= vcnt;
+
+always @(posedge cam_pclk)
+	if(hcnt>='d100 & hcnt<(IMG_HDISP+100) & vcnt>=50 & vcnt<(50+IMG_VDISP))
+		hsync <= 1'b1;
+	else
+		hsync <= 1'b0;
+
+always @(posedge cam_pclk)
+	if(vcnt<1 & hcnt<50)
+		vsync <= 1'b1;
+	else
+		vsync <= 1'b0;
+
+always @(posedge cam_pclk)
+	if(hcnt>='d100 & hcnt<(IMG_HDISP+100) & vcnt>=50 & vcnt<51)
+		data <= 16'haaaa;
+	else if(hcnt>='d100 & hcnt<(IMG_HDISP*1/8+100) & vcnt>=51 & vcnt<(50+IMG_VDISP))
+		data <= RED;
+	else if(hcnt>='d100 & hcnt<(IMG_HDISP*2/8+100) & vcnt>=51 & vcnt<(50+IMG_VDISP))
+		data <= GREEN;
+	else if(hcnt>='d100 & hcnt<(IMG_HDISP*3/8+100) & vcnt>=51 & vcnt<(50+IMG_VDISP))
+		data <= YELLOW;
+	else if(hcnt>='d100 & hcnt<(IMG_HDISP*4/8+100) & vcnt>=51 & vcnt<(50+IMG_VDISP))
+		data <= BLUE;
+	else if(hcnt>='d100 & hcnt<(IMG_HDISP*5/8+100) & vcnt>=51 & vcnt<(50+IMG_VDISP))
+		data <= LIGTH_RED;
+	else if(hcnt>='d100 & hcnt<(IMG_HDISP*6/8+100) & vcnt>=51 & vcnt<(50+IMG_VDISP))
+		data <= LIGHT_BLUE;
+	else if(hcnt>='d100 & hcnt<(IMG_HDISP*7/8+100) & vcnt>=51 & vcnt<(50+IMG_VDISP))
+		data <= BLACK;
+	else if(hcnt>='d100 & hcnt<(IMG_HDISP+100) & vcnt>=51 & vcnt<(50+IMG_VDISP))
+		data <= WHITE;
+	else
+		data <= 16'h00; 	
+
+		
+
+endmodule

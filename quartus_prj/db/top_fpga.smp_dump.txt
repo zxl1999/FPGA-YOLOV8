@@ -1,0 +1,16 @@
+
+State Machine - |top_fpga|eth_udp:eth_udp_inst|ip_send:ip_send_inst|state
+Name state.CRC state.SEND_DATA state.IP_UDP_HEAD state.ETH_HEAD state.PACKET_HEAD state.CHECK_SUM state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 
+state.CHECK_SUM 0 0 0 0 0 1 1 
+state.PACKET_HEAD 0 0 0 0 1 0 1 
+state.ETH_HEAD 0 0 0 1 0 0 1 
+state.IP_UDP_HEAD 0 0 1 0 0 0 1 
+state.SEND_DATA 0 1 0 0 0 0 1 
+state.CRC 1 0 0 0 0 0 1 
+
+State Machine - |top_fpga|camera_if:camera_if_inst|I2C_AV_Config:u_I2C_AV_Config|mSetup_ST
+Name mSetup_ST.00 mSetup_ST.10 mSetup_ST.01 
+mSetup_ST.00 0 0 0 
+mSetup_ST.01 1 0 1 
+mSetup_ST.10 1 1 0 
